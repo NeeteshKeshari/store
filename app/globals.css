@@ -1,0 +1,4 @@
+/* ./app/globals.css OR ./styles/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
