@@ -1,5 +1,5 @@
 {
-  "name": "store-app",
+  "name": "stock-management-app",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,7 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "mongodb": "^6.9.0",
+    "axios": "^1.7.7",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.7.0",
     "next": "14.2.14",
     "react": "^18",
     "react-dom": "^18"
