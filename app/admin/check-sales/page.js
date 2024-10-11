@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import Link from 'next/link';
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export default function SalesPage() {
     const [product, setProduct] = useState("Besan");
@@ -27,7 +29,7 @@ export default function SalesPage() {
     useEffect(() => {
         async function fetchCustomers() {
             try {
-                const response = await axios.get("https://stock-node-55ci.onrender.com/api/customers");
+                const response = await axios.get(`${apiUrl}/api/customers`);
                 const formattedCustomers = response.data.map((customer) => ({
                     id: customer._id,
                     name: customer.customerName,
@@ -173,9 +175,17 @@ export default function SalesPage() {
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
             <div className="w-full max-w-lg bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-2xl font-semibold text-gray-800 mb-4 text-center">
-                    Sales Page
-                </h2>
+                <div className='flex flex-row items-start'>
+					<div className='w-1/4 mt-1'>
+						<Link href='/admin/dashboard' className='text-xs border border-gray-500 p-1 px-2 rounded-md hover:border-blue-600 hover:text-blue-600'>Back</Link>
+					</div>
+					<div className='w-1/2'>
+						<h2 className="text-2xl font-semibold text-gray-800 mb-4 text-center">
+							{editingSaleId ? "Update Sales" : "Add Sales"}
+						</h2>
+					</div>
+					<div className='w-1/4'></div>
+				</div>
                 <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                         <label className="block text-gray-700">Select Product</label>

@@ -1,5 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+import Link from 'next/link';
+
 
 export default function AddRawMaterial() {
 	const [rawMaterialName, setRawMaterialName] = useState("Chana Daal");
@@ -16,7 +19,7 @@ export default function AddRawMaterial() {
 	// Fetch stock list
 	const fetchStockList = async () => {
 		try {
-			const res = await fetch('https://stock-node-55ci.onrender.com/api/stock');
+			const res = await fetch(`${apiUrl}/api/stock`);
 			const data = await res.json();
 			setStockList(data);
 		} catch (error) {
@@ -113,9 +116,17 @@ export default function AddRawMaterial() {
 	return (
 		<div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
 			<div className="w-full max-w-lg bg-white rounded-lg shadow-md p-6 mb-8">
-				<h2 className="text-2xl font-semibold text-gray-800 mb-4 text-center">
-					{isEdit ? "Update Raw Material" : "Add Raw Material"}
-				</h2>
+				<div className='flex flex-row items-start'>
+					<div className='w-1/4 mt-1'>
+						<Link href='/admin/dashboard' className='text-xs border border-gray-500 p-1 px-2 rounded-md hover:border-blue-600 hover:text-blue-600'>Back</Link>
+					</div>
+					<div className='w-1/2'>
+						<h2 className="text-2xl font-semibold text-gray-800 mb-4 text-center">
+							{isEdit ? "Update Raw Material" : "Add Raw Material"}
+						</h2>
+					</div>
+					<div className='w-1/4'></div>
+				</div>
 				<form onSubmit={handleSubmit} className="space-y-4">
 					<div>
 						<label className="block text-gray-700">Raw Material Name</label>

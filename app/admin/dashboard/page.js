@@ -1,8 +1,10 @@
+import Header from '@/app/components/Header';
 import Link from 'next/link';
 
 export default function AdminDashboard() {
 	return (
-		<div className="min-h-screen flex items-center justify-center bg-gray-100">
+		<div className="min-h-screen flex flex-col items-center justify-center bg-white">
+			<Header />
 			<div className="w-full max-w-md bg-white rounded-lg shadow-md p-6">
 				<h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Admin Dashboard</h2>
 				<ul className="space-y-4">
