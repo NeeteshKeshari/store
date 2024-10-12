@@ -10,12 +10,12 @@ export default function AdminDashboard() {
 				<ul className="space-y-4">
 					<li>
 						<Link href="/admin/add-raw-material" className="block w-full text-center py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
-							Add Raw Material
+							Raw Material
 						</Link>
 					</li>
 					<li>
 						<Link href="/admin/update-user" className="block w-full text-center py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">
-							Update User Entry
+							Approve User Entry
 						</Link>
 					</li>
 					<li>
