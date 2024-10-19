@@ -28,6 +28,7 @@ export default function AdminLogin() {
 			);
 
 			if (user) {
+        localStorage.setItem('userNumber', mobile);
 				router.push('/user/dashboard');
 			} else {
 				setError('Access denied 🙅‍♂️');
@@ -51,14 +52,14 @@ export default function AdminLogin() {
 						placeholder="Mobile Number"
 						value={mobile}
 						onChange={(e) => setMobile(e.target.value)}
-						className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+						className="w-full px-3 py-2 text-gray-800 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
 					/>
 					<input
 						type="password"
 						placeholder="Password"
 						value={password}
 						onChange={(e) => setPassword(e.target.value)}
-						className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+						className="w-full px-3 py-2 text-gray-800 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
 					/>
 					<button
 						type="submit"

@@ -14,7 +14,7 @@ export default function AdminDashboard() {
 						</Link>
 					</li>
 					<li>
-						<Link href="/admin/update-user" className="block w-full text-center py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">
+						<Link href="/admin/user-entry" className="block w-full text-center py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">
 							Approve User Entry
 						</Link>
 					</li>
