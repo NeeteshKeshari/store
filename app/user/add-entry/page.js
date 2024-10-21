@@ -5,7 +5,7 @@ import Link from 'next/link';
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export default function AddEntry() {
-    const [productName, setProductName] = useState("Besan Packet");
+    const [productName, setProductName] = useState("Besan");
     const [approvalStatus, setApprovalStatus] = useState("Pending");
     const [quantity, setQuantity] = useState("");
     const [date, setDate] = useState("");
@@ -195,11 +195,11 @@ export default function AddEntry() {
                             onChange={(e) => setProductName(e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                         >
-                            <option value="Besan Packet">Besan Packet</option>
-                            <option value="Sooji Packet">Sooji Packet</option>
-                            <option value="Maida Packet">Maida Packet</option>
-                            <option value="Khadi Moong Packet">Khadi Moong Packet</option>
-                            <option value="Daliya Packet">Daliya Packet</option>
+                            <option value="Besan">Besan</option>
+                            <option value="Sooji">Sooji</option>
+                            <option value="Maida">Maida</option>
+                            <option value="Khadi Moong">Khadi Moong</option>
+                            <option value="Daliya">Daliya</option>
                         </select>
                     </div>
                     <div>

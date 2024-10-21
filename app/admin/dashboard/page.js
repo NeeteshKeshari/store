@@ -1,5 +1,7 @@
+"use client"
 import Header from '@/app/components/Header';
 import Link from 'next/link';
+import React, { } from 'react';
 
 export default function AdminDashboard() {
 	return (
@@ -26,6 +28,11 @@ export default function AdminDashboard() {
 					<li>
 						<Link href="/admin/check-sales" className="block w-full text-center py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
 							Sales
+						</Link>
+					</li>
+					<li>
+						<Link href="/admin/summary" className="block w-full text-center py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition">
+							Summary
 						</Link>
 					</li>
 				</ul>
