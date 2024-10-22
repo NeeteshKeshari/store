@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from 'next/link';
-
+import Cookies from 'js-cookie';
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export default function AddEntry() {
@@ -20,7 +20,11 @@ export default function AddEntry() {
     // Fetch entry list
     const fetchEntryList = async () => {
         try {
-            const res = await fetch(`${apiUrl}/api/entry`); // Pass userNum as a query parameter
+            const res = await fetch(`${apiUrl}/api/entry`, {
+                headers: {
+					"Authorization": `Bearer ${Cookies.get('authToken')}`
+				}
+            });
             const data = await res.json();
             setEntryList(data);
         } catch (error) {
@@ -74,6 +78,7 @@ export default function AddEntry() {
                 method,
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${Cookies.get('authToken')}`
                 },
                 body: JSON.stringify({ productName, quantity, userNum, approvalStatus, date: currentDate }),
             });

@@ -10,9 +10,15 @@
   },
   "dependencies": {
     "axios": "^1.7.7",
+    "install": "^0.13.0",
+    "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
+    "jspdf": "^2.5.2",
     "mongoose": "^8.7.0",
     "next": "14.2.14",
+    "nookies": "^2.5.2",
+    "npm": "^10.9.0",
+    "qrcode.react": "^4.0.1",
     "react": "^18",
     "react-dom": "^18"
   },

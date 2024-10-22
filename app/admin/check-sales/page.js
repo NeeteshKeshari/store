@@ -3,10 +3,14 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Link from 'next/link';
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+import Cookies from 'js-cookie';
+import SalesList from "@/app/components/SalesList";
 
 export default function SalesPage() {
-    const [product, setProduct] = useState("Besan");
+    const [product, setProduct] = useState("");
+    const [productList, setProductList] = useState([]);
     const [quantity, setQuantity] = useState("");
+    const [quantityTotal, setQuantityTotal] = useState("");
     const [cost, setCost] = useState("");
     const [date, setDate] = useState("");
     const [customerName, setCustomerName] = useState("");
@@ -29,10 +33,13 @@ export default function SalesPage() {
     const [totalDueNew, setTotalDueNew] = useState(0);
     const [totalOverallDueNew, setTotalOverallDueNew] = useState(0);
 
-
     async function fetchCustomers() {
         try {
-            const response = await axios.get(`${apiUrl}/api/customers`);
+            const response = await axios.get(`${apiUrl}/api/customers`, {
+                headers: {
+                    "Authorization": `Bearer ${Cookies.get('authToken')}`
+                }
+            });
             const formattedCustomers = response.data.map((customer) => ({
                 id: customer._id,
                 name: customer.customerName,
@@ -46,7 +53,11 @@ export default function SalesPage() {
 
     async function fetchSales() {
         try {
-            const response = await axios.get("https://stock-node-55ci.onrender.com/api/sales");
+            const response = await axios.get(`${apiUrl}/api/sales`, {
+                headers: {
+                    "Authorization": `Bearer ${Cookies.get('authToken')}`
+                }
+            });
             const data = response.data;
 
             // Get unique customers and their addresses
@@ -157,6 +168,13 @@ export default function SalesPage() {
             return;
         }
 
+        console.log(quantityTotal, parseInt(quantity, 10))
+
+        if (parseInt(quantity, 10) > quantityTotal) {
+            setError("Selling over stock.");
+            return;
+        }
+
         try {
             const payload = {
                 product,
@@ -172,7 +190,11 @@ export default function SalesPage() {
 
             let res;
             if (editingSaleId) {
-                res = await axios.put(`https://stock-node-55ci.onrender.com/api/sales/${editingSaleId}`, payload);
+                res = await axios.put(`${apiUrl}/api/sales/${editingSaleId}`, payload, {
+                    headers: {
+                        "Authorization": `Bearer ${Cookies.get('authToken')}`
+                    }
+                });
                 if (res.status === 200) {
                     setSalesNew((prevSales) =>
                         prevSales.map((sale) =>
@@ -184,7 +206,11 @@ export default function SalesPage() {
                 }
             } else {
                 console.log(payload)
-                res = await axios.post("https://stock-node-55ci.onrender.com/api/sales", payload);
+                res = await axios.post(`${apiUrl}/api/sales`, payload, {
+                    headers: {
+                        "Authorization": `Bearer ${Cookies.get('authToken')}`
+                    }
+                });
                 if (res.status === 201) {
                     setSalesNew((prevSales) => [...prevSales, res.data]);
                     setSuccess("Sale record added successfully!");
@@ -199,6 +225,7 @@ export default function SalesPage() {
     };
 
     const handleEdit = (sale) => {
+        console.log(sale)
         setProduct(sale.product);
         setQuantity(sale.quantity);
         setCost(sale.cost);
@@ -207,7 +234,7 @@ export default function SalesPage() {
             month: '2-digit',
             year: 'numeric'
         });
-        
+
         // Update the state
         setDate(formattedDate);
         setCustomerName(sale.customerName);
@@ -220,8 +247,9 @@ export default function SalesPage() {
     };
 
     const resetForm = () => {
-        setProduct("Besan");
+        setProduct("Select Product");
         setQuantity("");
+        setQuantityTotal("");
         setCost("");
         setDate("");
         setCustomerName("");
@@ -231,7 +259,25 @@ export default function SalesPage() {
         setTotalDue("");
         setIsCalculated(false);
         setEditingSaleId(null);
+        setError("");
+        setSuccess("");
     };
+
+    useEffect(() => {
+        async function fetchSales() {
+            try {
+                const response = await axios.get(`${apiUrl}/api/products`, {
+                    headers: {
+                        "Authorization": `Bearer ${Cookies.get('authToken')}`
+                    }
+                });
+                setProductList(response.data);
+            } catch (error) {
+                console.error("Error fetching sales:", error);
+            }
+        }
+        fetchSales();
+    }, []);
 
     return (
         <div className="min-h-screen py-10 flex flex-col items-center justify-center bg-gray-100">
@@ -250,16 +296,39 @@ export default function SalesPage() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <label className="block text-gray-700">Select Product</label>
-                        <select
+                        {/* <select
                             value={product}
                             onChange={(e) => setProduct(e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                         >
-                            <option value="Besan">Besan</option>
-                            <option value="Sooji">Sooji</option>
-                            <option value="Maida">Maida</option>
-                            <option value="Daliya">Daliya</option>
-                            <option value="Bhura">Bhura</option>
+                            <option value="">Select Product</option>
+                            {console.log(productList)}
+                            {productList && productList.map((product) => (
+                                <option key={product._id} value={product.selectedProduct}>
+                                    {product.selectedProduct}
+                                </option>
+                            ))}
+                        </select> */}
+                        <select
+                            onChange={(e) => {
+                                const selectedProduct = e.target.value;
+                                // Find the selected product from productList
+                                const product = productList.find(prod => prod.selectedProduct === selectedProduct);
+                                // If product is found, set the cost
+                                if (product) {
+                                    setProduct(selectedProduct)
+                                    setCost(product.sellingCost); // Assuming setCost is your state setter for cost
+                                    setQuantityTotal(product.quantity);
+                                }
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 form-select"
+                        >
+                            <option value="">Select a product</option>
+                            {productList && productList.map((product) => (
+                                <option key={product._id} value={product.selectedProduct}>
+                                    {product.selectedProduct}
+                                </option>
+                            ))}
                         </select>
                     </div>
                     <div className="mb-4">
@@ -314,6 +383,15 @@ export default function SalesPage() {
                         />
                     )}
                     <div>
+                        <label className="block text-gray-700">Total Quantity in Stock (in Kg)</label>
+                        <input
+                            type="number"
+                            value={quantityTotal}
+                            readOnly
+                            className="mt-1 block w-full p-2 border border-gray-300 font-bold rounded-md bg-gray-100"
+                        />
+                    </div>
+                    <div>
                         <label className="block text-gray-700">Quantity (in Kg)</label>
                         <input
                             type="number"
@@ -327,8 +405,9 @@ export default function SalesPage() {
                         <input
                             type="number"
                             value={cost}
+                            readOnly
                             onChange={(e) => setCost(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                            className="mt-1 block w-full p-2 border border-gray-300 font-bold rounded-md bg-gray-100"
                         />
                     </div>
                     <div>
@@ -373,7 +452,7 @@ export default function SalesPage() {
                         <button
                             type="button"
                             onClick={addPayment}
-                            className="text-blue-500 mt-2"
+                            className="text-blue-500 hover:text-blue-700 mt-2"
                         >
                             Add More Payment
                         </button>
@@ -456,45 +535,7 @@ export default function SalesPage() {
                     </select>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filteredSalesNew && filteredSalesNew.map((sale) => (
-                        <div key={sale._id} className="bg-white p-4 rounded-lg shadow-md">
-                            <h4 className="text-lg font-semibold">{sale.product}</h4>
-                            <p>Customer: {sale.customerName}</p>
-                            <p>Quantity: {sale.quantity} Kg</p>
-                            <p>Cost: {sale.cost} per Kg</p>
-                            <p>Total: {sale.totalDue}</p>
-                            <p>Payment Record:
-                                <table className='border-collapse text-sm w-full mb-1 border border-slate-400'>
-                                    <thead>
-                                        <tr>
-                                            <th className='border text-left p-1 border-slate-300'>Amount</th>
-                                            <th className='border p-1 border-slate-300 text-left'>Date</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {sale.amountPaid && sale.amountPaid.map((item, index) => (
-
-                                            <tr key={index}>
-                                                <td className='border p-1 border-slate-300'>{item.amount}</td>
-                                                <td className='border p-1 border-slate-300'>{new Date(item.date).toLocaleDateString()}</td>
-                                            </tr>
-
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </p>
-                            <p>Amount Due: {sale.amountDue}</p>
-                            <p>Date: {new Date(sale.date).toLocaleDateString()}</p>
-                            <button
-                                onClick={() => handleEdit(sale)}
-                                className="mt-2 w-full bg-yellow-500 text-white py-1 rounded-lg hover:bg-yellow-600"
-                            >
-                                Edit
-                            </button>
-                        </div>
-                    ))}
-                </div>
+                <SalesList filteredSalesNew={filteredSalesNew} handleEdit={handleEdit} fetchSales={fetchSales} />
             </div>
         </div>
     );

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 import Link from 'next/link';
-
+import Cookies from 'js-cookie';
 
 export default function AddRawMaterial() {
 	const [rawMaterialName, setRawMaterialName] = useState("Chana Daal");
@@ -19,7 +19,11 @@ export default function AddRawMaterial() {
 	// Fetch stock list
 	const fetchStockList = async () => {
 		try {
-			const res = await fetch(`${apiUrl}/api/stock`);
+			const res = await fetch(`${apiUrl}/api/stock`,{
+				headers: {
+					"Authorization": `Bearer ${Cookies.get('authToken')}`
+				}
+			});
 			const data = await res.json();
 			setStockList(data);
 		} catch (error) {
@@ -69,6 +73,7 @@ export default function AddRawMaterial() {
 				method,
 				headers: {
 					"Content-Type": "application/json",
+					"Authorization": `Bearer ${Cookies.get('authToken')}`
 				},
 				body: JSON.stringify({ rawMaterialName, quantity, price, date: currentDate }),
 			});

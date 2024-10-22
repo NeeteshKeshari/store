@@ -1,18 +1,33 @@
 "use client"
 import React, { useEffect, useState } from 'react';
+import Cookies from 'js-cookie';
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 const StockManagementDashboard = () => {
 	const [products, setProducts] = useState([]);
 	const [sales, setSales] = useState([]);
 	const [manufacturing, setManufacturing] = useState([]);
 	const [loading, setLoading] = useState(true);
+	
 
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
-				const productsRes = await fetch('https://stock-node-55ci.onrender.com/api/products');
-				const salesRes = await fetch('https://stock-node-55ci.onrender.com/api/sales');
-				const manufacturingRes = await fetch('https://stock-node-55ci.onrender.com/api/entry');
+				const productsRes = await fetch(`${apiUrl}/api/products`, {
+					headers: {
+						"Authorization": `Bearer ${Cookies.get('authToken')}`
+					}
+				});
+				const salesRes = await fetch(`${apiUrl}/api/sales`, {
+					headers: {
+						"Authorization": `Bearer ${Cookies.get('authToken')}`
+					}
+				});
+				const manufacturingRes = await fetch(`${apiUrl}/api/entry`, {
+					headers: {
+						"Authorization": `Bearer ${Cookies.get('authToken')}`
+					}
+				});
 
 				const productsData = await productsRes.json();
 				const salesData = await salesRes.json();

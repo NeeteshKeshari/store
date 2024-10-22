@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 import Link from 'next/link';
+import Cookies from 'js-cookie';
 
 export default function ProductPage() {
 	const [selectedProduct, setSelectedProduct] = useState("Besan");
@@ -23,7 +24,11 @@ export default function ProductPage() {
 	useEffect(() => {
 		async function fetchSales() {
 			try {
-				const response = await axios.get(`${apiUrl}/api/products`);
+				const response = await axios.get(`${apiUrl}/api/products`, {
+					headers: {
+						"Authorization": `Bearer ${Cookies.get('authToken')}`
+					}
+				});
 				setSales(response.data);
 			} catch (error) {
 				console.error("Error fetching sales:", error);
@@ -54,7 +59,11 @@ export default function ProductPage() {
 
 			let res;
 			if (editingSaleId) {
-				res = await axios.put(`https://stock-node-55ci.onrender.com/api/products/${editingSaleId}`, payload);
+				res = await axios.put(`https://stock-node-55ci.onrender.com/api/products/${editingSaleId}`, payload, {
+					headers: {
+						"Authorization": `Bearer ${Cookies.get('authToken')}`
+					}
+				});
 				if (res.status === 200) {
 					setSales((prevSales) =>
 						prevSales.map((sale) =>
@@ -64,7 +73,11 @@ export default function ProductPage() {
 					setSuccess("Product record updated successfully!");
 				}
 			} else {
-				res = await axios.post("https://stock-node-55ci.onrender.com/api/products", payload);
+				res = await axios.post("https://stock-node-55ci.onrender.com/api/products", payload, {
+					headers: {
+						"Authorization": `Bearer ${Cookies.get('authToken')}`
+					}
+				});
 				if (res.status === 201) {
 					setSales((prevSales) => [...prevSales, res.data]);
 					setSuccess("Product record added successfully!");

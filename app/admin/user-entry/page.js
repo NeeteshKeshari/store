@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from 'next/link';
-
+import Cookies from 'js-cookie';
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export default function UserEntry() {
@@ -15,7 +15,11 @@ export default function UserEntry() {
     // Fetch entry list
     const fetchEntryList = async () => {
         try {
-            const res = await fetch(`${apiUrl}/api/entry`); // Pass userNum as a query parameter
+            const res = await fetch(`${apiUrl}/api/entry`, {
+                headers: {
+					"Authorization": `Bearer ${Cookies.get('authToken')}`
+				}
+            }); // Pass userNum as a query parameter
             const data = await res.json();
             setEntryList(data);
         } catch (error) {
@@ -59,6 +63,7 @@ export default function UserEntry() {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${Cookies.get('authToken')}`
                 },
                 body: JSON.stringify({
                     productName,
