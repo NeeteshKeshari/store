@@ -2,13 +2,14 @@
 import React, { useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+import Link from 'next/link';
 
 const StockManagementDashboard = () => {
 	const [products, setProducts] = useState([]);
 	const [sales, setSales] = useState([]);
 	const [manufacturing, setManufacturing] = useState([]);
 	const [loading, setLoading] = useState(true);
-	
+
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -55,15 +56,17 @@ const StockManagementDashboard = () => {
 	};
 
 	const calculateTotalPaid = () => {
-		return sales.reduce((total, sale) => total + sale.amountPaid, 0);
+		return sales.reduce((total, sale) => {
+			const totalPaidForSale = sale.amountPaid.reduce((sum, payment) => sum + payment.amount, 0);
+			return total + totalPaidForSale;
+		}, 0);
 	};
 
 	const calculateTotalManufacturingCost = () => {
 		return manufacturing.reduce((total, item) => {
 			const product = products.find(prod => prod.selectedProduct === item.productName);
 			const soldItemCount = sales.find(saleItem => saleItem.product === item.productName);
-			console.log(soldItemCount)
-			console.log(total + (product ? soldItemCount.quantity : 0) + (product ? product.packingCharge * soldItemCount.quantity : 0) + (product ? product.pisaiCharge * soldItemCount.quantity : 0) + (product ? product.pouchCharge * soldItemCount.quantity : 0) + (product ? product.actualCost * soldItemCount.quantity : 0) + (product ? (product.transportCharge) / 100 * soldItemCount.quantity : 0))
+			// console.log(total + (product ? soldItemCount.quantity : 0) + (product ? product.packingCharge * soldItemCount.quantity : 0) + (product ? product.pisaiCharge * soldItemCount.quantity : 0) + (product ? product.pouchCharge * soldItemCount.quantity : 0) + (product ? product.actualCost * soldItemCount.quantity : 0) + (product ? (product.transportCharge) / 100 * soldItemCount.quantity : 0))
 			return total + (product ? product.packingCharge * soldItemCount.quantity : 0) + (product ? product.pisaiCharge * soldItemCount.quantity : 0) + (product ? product.pouchCharge * soldItemCount.quantity : 0) + (product ? product.actualCost * soldItemCount.quantity : 0) + (product ? (product.transportCharge) / 100 * soldItemCount.quantity : 0);
 		}, 0);
 	};
@@ -99,26 +102,51 @@ const StockManagementDashboard = () => {
 	}
 
 	return (
-		<div className="p-4">
-			<h2 className="text-2xl font-bold">Stock Management Dashboard</h2>
+		<div className="flex flex-col h-full items-center justify-center bg-gray-100">
+			<div className="w-full bg-white rounded-lg shadow-md p-6">
+				<h2 className="text-2xl font-bold text-center">Summary</h2>
+				<div className="w-1/4 -mt-[27px]">
+					<Link href="/admin/dashboard" className="text-xs border border-gray-500 p-1 px-2 rounded-md hover:border-blue-600 hover:text-blue-600">Back</Link>
+				</div>
+				<div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+					<div className="bg-white border-l-8 border-t border-t-gray-100 border-gray-500 p-4 rounded-lg flex flex-col justify-start shadow-md relative">
+						<div className="text-lg font-semibold mb-2">Total Sales</div>
+						<div className="text-2xl font-bold">₹{calculateTotalSales()}</div>
+					</div>
+					<div className="bg-white border-l-8 border-t border-t-gray-100 border-blue-500 p-4 rounded-lg flex flex-col justify-start shadow-md relative">
+						<div className="text-lg font-semibold mb-2">Total Paid</div>
+						<div className="text-2xl font-bold">₹{calculateTotalPaid()}</div>
+					</div>
+					<div className="bg-white border-l-8 border-t border-t-gray-100 border-red-500 p-4 rounded-lg flex flex-col justify-start shadow-md relative">
+						<div className="text-lg font-semibold mb-2">Total Due</div>
+						<div className="text-2xl font-bold">₹{calculateTotalDue()}</div>
+					</div>
+					<div className="bg-white border-l-8 border-t border-t-gray-100 border-green-500 p-4 rounded-lg flex flex-col justify-start shadow-md relative">
+						<div className="text-lg font-semibold mb-2">Total Income</div>
+						<div className="text-2xl font-bold">₹{calculateTotalIncome()}</div>
+					</div>
+					{calculateProfitOrLoss() === 'Profit' ?
+						<div className="p-4 bg-green-500 text-white font-bold text-2xl text-center rounded-lg shadow-md relative">{`You are in: ${calculateProfitOrLoss()}`}</div>
+						:
+						<div className="p-4 bg-red-500 text-white font-bold text-2xl text-center rounded-lg shadow-md relative">{`You are in: ${calculateProfitOrLoss()}`}</div>
+					}
 
-			<div className="mt-4">
-				<h3 className="text-xl">Total Sales: ₹{calculateTotalSales()}</h3>
-				<h3 className="text-lg">Total Paid: ₹{calculateTotalPaid()}</h3>
-				<h3 className="text-lg">Total Due: ₹{calculateTotalDue()}</h3>
-				<h3 className="text-xl mt-5">Total Income: ₹{calculateTotalIncome()}</h3>
-				<h3 className="text-xl mt-5">{`You are in: ${calculateProfitOrLoss()}`}</h3>
-			</div>
+				</div>
 
-			<div className="mt-4">
-				<h3 className="text-xl font-bold">Remaining Stock</h3>
-				<ul>
-					{calculateRemainingStock().map(stock => (
-						<li key={stock.selectedProduct}>
-							{stock.selectedProduct}: {stock.remainingQuantity} kg
-						</li>
-					))}
-				</ul>
+				<div className="mt-10 pt-10 border-t border-gray-300">
+					<h2 className="text-2xl font-bold text-center">Stock</h2>
+					<div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6'>
+						{calculateRemainingStock().map(stock => (
+							<div
+								key={stock.selectedProduct}
+								className={`border-l-8 border-t border-t-gray-100 border-gray-500 p-4 rounded-lg flex flex-col justify-start shadow-md relative ${stock.remainingQuantity === 0 ? 'bg-red-500 text-white' : 'bg-white'}`}
+							>
+								<div className="text-lg font-semibold mb-2">{stock.selectedProduct}</div>
+								<div className="text-2xl font-bold">{stock.remainingQuantity === 0 ? 'Out of stock' : `${stock.remainingQuantity} Kg`}</div>
+							</div>
+						))}
+					</div>
+				</div>
 			</div>
 		</div>
 	);
