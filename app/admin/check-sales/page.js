@@ -11,6 +11,7 @@ export default function SalesPage() {
     const [productList, setProductList] = useState([]);
     const [quantity, setQuantity] = useState("");
     const [quantityTotal, setQuantityTotal] = useState("");
+    const [productId, setProductId] = useState("");
     const [cost, setCost] = useState("");
     const [date, setDate] = useState("");
     const [customerName, setCustomerName] = useState("");
@@ -178,6 +179,7 @@ export default function SalesPage() {
         try {
             const payload = {
                 product,
+                productId,
                 quantity,
                 cost,
                 date: new Date().toISOString(),
@@ -195,6 +197,7 @@ export default function SalesPage() {
                         "Authorization": `Bearer ${Cookies.get('authToken')}`
                     }
                 });
+                // console.log(payload)
                 if (res.status === 200) {
                     setSalesNew((prevSales) =>
                         prevSales.map((sale) =>
@@ -205,7 +208,7 @@ export default function SalesPage() {
                     fetchSales();
                 }
             } else {
-                console.log(payload)
+                // console.log(payload)
                 res = await axios.post(`${apiUrl}/api/sales`, payload, {
                     headers: {
                         "Authorization": `Bearer ${Cookies.get('authToken')}`
@@ -227,6 +230,7 @@ export default function SalesPage() {
     const handleEdit = (sale) => {
         console.log(sale)
         setProduct(sale.product);
+        setProductId(productId)
         setQuantity(sale.quantity);
         setCost(sale.cost);
         const formattedDate = new Date(sale.date).toLocaleDateString('en-GB', {
@@ -249,6 +253,7 @@ export default function SalesPage() {
     const resetForm = () => {
         setProduct("Select Product");
         setQuantity("");
+        setProductId("");
         setQuantityTotal("");
         setCost("");
         setDate("");
@@ -319,6 +324,7 @@ export default function SalesPage() {
                                     setProduct(selectedProduct)
                                     setCost(product.sellingCost); // Assuming setCost is your state setter for cost
                                     setQuantityTotal(product.quantity);
+                                    setProductId(product._id);
                                 }
                             }}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 form-select"

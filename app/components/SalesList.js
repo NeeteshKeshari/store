@@ -56,7 +56,7 @@ const SalesList = ({ filteredSalesNew, handleEdit, fetchSales }) => {
         const pdfBlob = doc.output('blob');
 
         const url = URL.createObjectURL(pdfBlob);
-        console.log(url)
+        // console.log(url)
         setPdfUrl(url); // Set the generated PDF URL for download
     };
 
