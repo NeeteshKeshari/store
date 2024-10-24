@@ -2,6 +2,7 @@
 import Header from '@/app/components/Header';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
 
 export default function AdminDashboard() {
 	const router = useRouter();
