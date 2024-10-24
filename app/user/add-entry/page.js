@@ -44,6 +44,9 @@ export default function AddEntry() {
         if (storedUser) {
             setUserNum(storedUser);
         }
+    }, []);
+
+    useEffect(() => {
         if (userNum) {
             fetchEntryList();
         }
