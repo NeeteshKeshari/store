@@ -130,6 +130,7 @@ export default function AddEntry() {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${Cookies.get('authToken')}`                
                 },
                 body: JSON.stringify({
                     productName,
