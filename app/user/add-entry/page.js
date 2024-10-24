@@ -22,11 +22,16 @@ export default function AddEntry() {
         try {
             const res = await fetch(`${apiUrl}/api/entry`, {
                 headers: {
-					"Authorization": `Bearer ${Cookies.get('authToken')}`
-				}
+                    "Authorization": `Bearer ${Cookies.get('authToken')}`
+                }
             });
             const data = await res.json();
-            setEntryList(data);
+
+            // Filter data based on userNum
+            const filteredData = data.filter(entry => entry.userNum === userNum);
+
+            // Set the filtered entry list
+            setEntryList(filteredData);
         } catch (error) {
             setError("Failed to fetch entry list.");
         }
@@ -116,12 +121,12 @@ export default function AddEntry() {
         try {
             const url = `${apiUrl}/api/entry/${entry._id}`;
             const currentDate = new Date().toISOString().split('T')[0];
-    
+
             // Use values directly from the entry object
             const productName = entry.productName;
             const quantity = entry.quantity;
             const approvalStatus = 'Submitted';
-    
+
             console.log('Body:', {
                 productName,
                 quantity,
@@ -129,7 +134,7 @@ export default function AddEntry() {
                 approvalStatus,
                 date: currentDate,
             });
-    
+
             const res = await fetch(url, {
                 method: "PUT",
                 headers: {
@@ -143,7 +148,7 @@ export default function AddEntry() {
                     date: currentDate,
                 }),
             });
-    
+
             if (res.ok) {
                 setSuccess("Entry submitted successfully!");
                 setQuantity("");
@@ -158,7 +163,7 @@ export default function AddEntry() {
             setLoading(false);
         }
     };
-    
+
 
     const handleCancel = () => {
         setQuantity("");
@@ -249,54 +254,58 @@ export default function AddEntry() {
             </div>
 
             <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {entryList.map((entry) => (
-                    <div key={entry._id} className="bg-white p-4 rounded-lg shadow-md">
-                        <h3 className="text-lg font-semibold text-gray-800">{entry.productName}</h3>
-                        <p className="text-gray-600">Quantity: {entry.quantity} packets</p>
-                        <p className="text-gray-600">Date: {new Date(entry.date).toLocaleDateString()}</p>
-                        <div className='flex flex-row gap-3'>
-                        {entry.approvalStatus === 'Pending' &&
-                        <button
-                            onClick={() => handleEdit(entry)}
-                            className="mt-4 w-full bg-yellow-500 text-white py-2 rounded-lg hover:bg-yellow-600 transition"
-                        >
-                            Edit
-                        </button>
-}
-                        {entry.approvalStatus === 'Submitted' &&
-                            <button
-                                disabled
-                                className="mt-4 w-full bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 transition"
-                            >
-                                Submitted
-                            </button>
-                        }
-                        {entry.approvalStatus === 'Pending' &&
-                        <button
-                            onClick={() => handleApproval(entry)}
-                            className="mt-4 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
-                        >
-                            Send for Approval
-                        </button>
-                        }
-                        {entry.approvalStatus === 'Approved' &&
-                        <button
-                            disabled
-                            className="mt-4 w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition"
-                        >
-                            Approved
-                        </button>
-                        }
-                        {entry.approvalStatus === 'Submitted' &&
-                        <a
-                                href={`https://wa.me/9560366334?text=Entry%20Details:%0AProduct%20Name:%20${encodeURIComponent(entry.productName)}%0ABy:%20${encodeURIComponent(entry.userNum)}%0AQuantity:%20${encodeURIComponent(entry.quantity)}%20packets%0ADate:%20${encodeURIComponent(new Date(entry.date).toLocaleDateString())}%0AApproval%20Status:%20${encodeURIComponent(entry.approvalStatus)}`}
-                                target="_blank"
-                                className="mt-4 w-full bg-green-600 text-white text-center px-4 py-2 rounded hover:bg-green-700"
-                            >Send WhatsApp</a>
-}
+                {entryList.length > 0 ? (
+                    entryList.map((entry) => (
+                        <div key={entry._id} className="bg-white p-4 rounded-lg shadow-md">
+                            <h3 className="text-lg font-semibold text-gray-800">{entry.productName}</h3>
+                            <p className="text-gray-600">Quantity: {entry.quantity} packets</p>
+                            <p className="text-gray-600">Date: {new Date(entry.date).toLocaleDateString()}</p>
+                            <div className='flex flex-row gap-3'>
+                                {entry.approvalStatus === 'Pending' &&
+                                    <button
+                                        onClick={() => handleEdit(entry)}
+                                        className="mt-4 w-full bg-yellow-500 text-white py-2 rounded-lg hover:bg-yellow-600 transition"
+                                    >
+                                        Edit
+                                    </button>
+                                }
+                                {entry.approvalStatus === 'Submitted' &&
+                                    <button
+                                        disabled
+                                        className="mt-4 w-full bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 transition"
+                                    >
+                                        Submitted
+                                    </button>
+                                }
+                                {entry.approvalStatus === 'Pending' &&
+                                    <button
+                                        onClick={() => handleApproval(entry)}
+                                        className="mt-4 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
+                                    >
+                                        Send for Approval
+                                    </button>
+                                }
+                                {entry.approvalStatus === 'Approved' &&
+                                    <button
+                                        disabled
+                                        className="mt-4 w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition"
+                                    >
+                                        Approved
+                                    </button>
+                                }
+                                {entry.approvalStatus === 'Submitted' &&
+                                    <a
+                                        href={`https://wa.me/9560366334?text=Entry%20Details:%0AProduct%20Name:%20${encodeURIComponent(entry.productName)}%0ABy:%20${encodeURIComponent(entry.userNum)}%0AQuantity:%20${encodeURIComponent(entry.quantity)}%20packets%0ADate:%20${encodeURIComponent(new Date(entry.date).toLocaleDateString())}%0AApproval%20Status:%20${encodeURIComponent(entry.approvalStatus)}`}
+                                        target="_blank"
+                                        className="mt-4 w-full bg-green-600 text-white text-center px-4 py-2 rounded hover:bg-green-700"
+                                    >Send WhatsApp</a>
+                                }
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    ))
+                ) : (
+                    <p className="text-center text-gray-600">No entries found for this user.</p>
+                )}
             </div>
         </div>
     );
