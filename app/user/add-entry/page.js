@@ -28,7 +28,9 @@ export default function AddEntry() {
             const data = await res.json();
 
             // Filter data based on userNum
+            console.log(userNum)
             const filteredData = data.filter(entry => entry.userNum === userNum);
+            console.log(filteredData)
 
             // Set the filtered entry list
             setEntryList(filteredData);
@@ -38,14 +40,10 @@ export default function AddEntry() {
     };
 
     useEffect(() => {
-        // Check for user in localStorage on page load or refresh
         const storedUser = Cookies.get('userMobile'); // Corrected key name
         if (storedUser) {
             setUserNum(storedUser);
         }
-    }, []);
-
-    useEffect(() => {
         if (userNum) {
             fetchEntryList();
         }
