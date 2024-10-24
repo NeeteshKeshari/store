@@ -25,3 +25,12 @@ body {
     text-wrap: balance;
   }
 }
+
+.addRupee::after {
+  content: "₹";
+    position: absolute;
+    left: 0.75rem; /* Adjust this to control spacing */
+    top: 50%;
+    transform: translateY(-50%);
+    color: #000;
+}

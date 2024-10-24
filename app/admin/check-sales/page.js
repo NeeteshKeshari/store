@@ -206,6 +206,7 @@ export default function SalesPage() {
                     );
                     setSuccess("Sale record updated successfully!");
                     fetchSales();
+                    window.location.reload(false);
                 }
             } else {
                 // console.log(payload)
@@ -228,19 +229,14 @@ export default function SalesPage() {
     };
 
     const handleEdit = (sale) => {
-        console.log(sale)
+        // console.log(sale)
         setProduct(sale.product);
         setProductId(productId)
         setQuantity(sale.quantity);
         setCost(sale.cost);
-        const formattedDate = new Date(sale.date).toLocaleDateString('en-GB', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
-
-        // Update the state
+        const formattedDate = new Date(sale.date).toISOString().split('T')[0];
         setDate(formattedDate);
+        console.log(formattedDate)
         setCustomerName(sale.customerName);
         setCustomerAddress(sale.customerAddress);
         setAmountPaid(sale.amountPaid || [{ amount: "", date: "" }]); // Ensure it uses the existing data or a default value
@@ -406,15 +402,19 @@ export default function SalesPage() {
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                         />
                     </div>
-                    <div>
+                    <div className='relative'>
                         <label className="block text-gray-700">Cost (per Kg)</label>
-                        <input
-                            type="number"
-                            value={cost}
-                            readOnly
-                            onChange={(e) => setCost(e.target.value)}
-                            className="mt-1 block w-full p-2 border border-gray-300 font-bold rounded-md bg-gray-100"
-                        />
+                        <div className='relative'>
+                            <div className='addRupee'>
+                                <input
+                                    type="number"
+                                    value={cost}
+                                    readOnly
+                                    onChange={(e) => setCost(e.target.value)}
+                                    className="addRupee mt-1 block w-full p-2 pl-6 border border-gray-300 font-bold rounded-md bg-gray-100"
+                                />
+                            </div>
+                        </div>
                     </div>
                     <div>
                         <label className="block text-gray-700">Date</label>
@@ -427,34 +427,46 @@ export default function SalesPage() {
                     </div>
                     <div>
                         <label className="block text-gray-700">Payments</label>
-                        {amountPaid && amountPaid.map((payment, index) => (
-                            <div key={index} className="flex space-x-2 mb-2">
-                                <input
-                                    type="number"
-                                    value={payment.amount}
-                                    onChange={(e) => handlePaymentChange(index, "amount", e.target.value)}
-                                    placeholder="Amount"
-                                    className="w-[44%] px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                                    required
-                                />
-                                <input
-                                    type="date"
-                                    value={payment.date}
-                                    onChange={(e) => handlePaymentChange(index, "date", e.target.value)}
-                                    className="w-[44%] w- px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                                    required
-                                />
-                                {index > 0 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => removePayment(index)}
-                                        className="text-white bg-red-500 hover:bg-red-700 w-[40px] cursor-pointer h-[40px] mt-[2px] rounded text-lg font-bold"
-                                    >
-                                        x
-                                    </button>
-                                )}
-                            </div>
-                        ))}
+                        {amountPaid && amountPaid.map((payment, index) => {
+                            // Check if the date is valid
+                            const dateValue = payment.date ? new Date(payment.date) : null;
+                            const formattedDate = dateValue && !isNaN(dateValue) ? dateValue.toISOString().split('T')[0] : '';
+
+                            return (
+                                <div key={index} className="flex space-x-2 mb-2">
+                                    <div className='relative w-[44%]'>
+                                        <div className='addRupee'>
+                                            <input
+                                                type="number"
+                                                value={payment.amount}
+                                                onChange={(e) => handlePaymentChange(index, "amount", e.target.value)}
+                                                placeholder="Amount"
+                                                className="w-full px-3 py-2 pl-6 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                    <input
+                                        type="date"
+                                        // Use the checked and formatted date
+                                        value={formattedDate}
+                                        onChange={(e) => handlePaymentChange(index, "date", e.target.value)}
+                                        className="w-[44%] px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                                        required
+                                    />
+                                    {index > 0 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => removePayment(index)}
+                                            className="text-white bg-red-500 hover:bg-red-700 w-[40px] cursor-pointer h-[40px] mt-[2px] rounded text-lg font-bold"
+                                        >
+                                            x
+                                        </button>
+                                    )}
+                                </div>
+                            );
+                        })}
+
                         <button
                             type="button"
                             onClick={addPayment}
@@ -465,21 +477,29 @@ export default function SalesPage() {
                     </div>
                     <div>
                         <label className="block text-gray-700">Total Amount</label>
-                        <input
-                            type="text"
-                            value={totalDue}
-                            readOnly
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100"
-                        />
+                        <div className='relative'>
+                            <div className='addRupee'>
+                                <input
+                                    type="text"
+                                    value={totalDue}
+                                    readOnly
+                                    className="w-full px-3 py-2 pl-6 border border-gray-300 rounded-lg bg-gray-100"
+                                />
+                            </div>
+                        </div>
                     </div>
                     <div>
                         <label className="block text-gray-700">Amount Due</label>
-                        <input
-                            type="text"
-                            value={amountDue}
-                            readOnly
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100"
-                        />
+                        <div className='relative'>
+                            <div className='addRupee'>
+                                <input
+                                    type="text"
+                                    value={amountDue}
+                                    readOnly
+                                    className="w-full px-3 pl-6 py-2 border border-gray-300 rounded-lg bg-gray-100"
+                                />
+                            </div>
+                        </div>
                     </div>
                     <button
                         type="button"
@@ -541,7 +561,7 @@ export default function SalesPage() {
                     </select>
                 </div>
 
-                <SalesList filteredSalesNew={filteredSalesNew} handleEdit={handleEdit} fetchSales={fetchSales} />
+                <SalesList key={filteredSalesNew} filteredSalesNew={filteredSalesNew} handleEdit={handleEdit} fetchSales={fetchSales} />
             </div>
         </div>
     );

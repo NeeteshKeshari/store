@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 import Link from 'next/link';
+import Loading from '@/app/components/Loading';
 
 const StockManagementDashboard = () => {
 	const [products, setProducts] = useState([]);
@@ -67,7 +68,7 @@ const StockManagementDashboard = () => {
 			const product = products.find(prod => prod.selectedProduct === item.productName);
 			const soldItemCount = sales.find(saleItem => saleItem.product === item.productName);
 			// console.log(total + (product ? soldItemCount.quantity : 0) + (product ? product.packingCharge * soldItemCount.quantity : 0) + (product ? product.pisaiCharge * soldItemCount.quantity : 0) + (product ? product.pouchCharge * soldItemCount.quantity : 0) + (product ? product.actualCost * soldItemCount.quantity : 0) + (product ? (product.transportCharge) / 100 * soldItemCount.quantity : 0))
-			return total + (product ? product.packingCharge * soldItemCount.quantity : 0) + (product ? product.pisaiCharge * soldItemCount.quantity : 0) + (product ? product.pouchCharge * soldItemCount.quantity : 0) + (product ? product.actualCost * soldItemCount.quantity : 0) + (product ? (product.transportCharge) / 100 * soldItemCount.quantity : 0);
+			return total + (product ? product.packingCharge * soldItemCount?.quantity : 0) + (product ? product.pisaiCharge * soldItemCount?.quantity : 0) + (product ? product.pouchCharge * soldItemCount?.quantity : 0) + (product ? product.actualCost * soldItemCount?.quantity : 0) + (product ? (product.transportCharge) / 100 * soldItemCount?.quantity : 0);
 		}, 0);
 	};
 
@@ -77,7 +78,7 @@ const StockManagementDashboard = () => {
 				.filter(sale => sale.product === product.selectedProduct)
 				.reduce((total, sale) => total + sale.quantity, 0);
 
-			const remainingQuantity = product.quantity - totalSold;
+			const remainingQuantity = product.quantity;
 
 			return {
 				selectedProduct: product.selectedProduct,
@@ -89,16 +90,23 @@ const StockManagementDashboard = () => {
 	const calculateTotalIncome = () => {
 		const totalSales = calculateTotalSales();
 		const totalManufacturingCost = calculateTotalManufacturingCost();
+		if (totalSales === 0) {
+			return 'No Sell';
+		}
 		return totalSales - totalManufacturingCost;
 	};
 
 	const calculateProfitOrLoss = () => {
 		const totalIncome = calculateTotalIncome();
-		return totalIncome > 0 ? 'Profit' : 'Loss';
+		if (totalIncome === 'No Sell') {
+			return 'No Sell';
+		} else {
+			return totalIncome > 0 ? 'Profit' : 'Loss';
+		}
 	};
 
 	if (loading) {
-		return <div>Loading...</div>;
+		return <Loading />;
 	}
 
 	return (
@@ -127,8 +135,15 @@ const StockManagementDashboard = () => {
 					</div>
 					{calculateProfitOrLoss() === 'Profit' ?
 						<div className="p-4 bg-green-500 text-white font-bold text-2xl text-center rounded-lg shadow-md relative">{`You are in: ${calculateProfitOrLoss()}`}</div>
-						:
-						<div className="p-4 bg-red-500 text-white font-bold text-2xl text-center rounded-lg shadow-md relative">{`You are in: ${calculateProfitOrLoss()}`}</div>
+						: <>
+							{calculateProfitOrLoss() === 'No Sell' ?
+								<div className="p-4 bg-gray-500 text-white font-bold text-2xl text-center rounded-lg shadow-md relative">{`${calculateProfitOrLoss()}`}</div>
+								:
+								<div className="p-4 bg-red-500 text-white font-bold text-2xl text-center rounded-lg shadow-md relative">{`You are in: ${calculateProfitOrLoss()}`}</div>
+
+							}
+						</>
+
 					}
 
 				</div>

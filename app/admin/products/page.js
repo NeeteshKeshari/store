@@ -158,66 +158,93 @@ export default function ProductPage() {
 					</div>
 					<div>
 						<label className="block text-gray-700">Actual Cost (per Kg)</label>
-						<input
-							type="number"
-							value={actualCost}
-							onChange={(e) => setActualCost(e.target.value)}
-							className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-						/>
+						<div className='relative'>
+							<div className='addRupee'>
+								<input
+									type="number"
+									value={actualCost}
+									onChange={(e) => setActualCost(e.target.value)}
+									className="w-full px-3 pl-6 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+								/>
+							</div></div>
 					</div>
 					<div>
 						<label className="block text-gray-700">Selling Cost (per Kg)</label>
+						<div className='relative'>
+							<div className='addRupee'>
 						<input
 							type="number"
 							value={sellingCost}
 							onChange={(e) => setSellingCost(e.target.value)}
-							className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+							className="w-full px-3 pl-6 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
 						/>
+						</div>
+						</div>
 					</div>
 					<div>
-						<label className="block text-gray-700">Packing Charge</label>
+						<label className="block text-gray-700">Packing Charge (per Kg)</label>
+						<div className='relative'>
+							<div className='addRupee'>
 						<input
 							type="number"
 							value={packingCharge}
 							onChange={(e) => setPackingCharge(e.target.value)}
-							className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+							className="w-full px-3 pl-6 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
 						/>
+						</div>
+						</div>
 					</div>
 					<div>
-						<label className="block text-gray-700">Pouch Charge</label>
+						<label className="block text-gray-700">Pouch Charge (per kg)</label>
+						<div className='relative'>
+							<div className='addRupee'>
 						<input
 							type="number"
 							value={pouchCharge}
 							onChange={(e) => setPouchCharge(e.target.value)}
-							className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+							className="w-full px-3 pl-6 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
 						/>
+						</div>
+						</div>
 					</div>
 					<div>
-						<label className="block text-gray-700">Transport Charge</label>
+						<label className="block text-gray-700">Transport Charge (Total)</label>
+						<div className='relative'>
+							<div className='addRupee'>
 						<input
 							type="number"
 							value={transportCharge}
 							onChange={(e) => setTransportCharge(e.target.value)}
-							className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+							className="w-full px-3 pl-6 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
 						/>
+						</div>
+						</div>
 					</div>
 					<div>
-						<label className="block text-gray-700">Extra Charge</label>
+						<label className="block text-gray-700">Extra Charge (per Kg)</label>
+						<div className='relative'>
+							<div className='addRupee'>
 						<input
 							type="number"
 							value={extraCharge}
 							onChange={(e) => setExtraCharge(e.target.value)}
-							className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+							className="w-full px-3 py-2 pl-6 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
 						/>
+						</div>
+						</div>
 					</div>
 					<div>
-						<label className="block text-gray-700">Pisai Charge</label>
+						<label className="block text-gray-700">Pisai Charge (per Kg)</label>
+						<div className='relative'>
+							<div className='addRupee'>
 						<input
 							type="number"
 							value={pisaiCharge}
 							onChange={(e) => setPisaiCharge(e.target.value)}
-							className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+							className="w-full px-3 p-6 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
 						/>
+						</div>
+						</div>
 					</div>
 					<div>
 						<label className="block text-gray-700">Date</label>
@@ -235,14 +262,14 @@ export default function ProductPage() {
 						{editingSaleId ? "Update Product" : "Add Product"}
 					</button>
 					{editingSaleId && (
-                        <button
-                            type="button"
-                            onClick={resetForm}
-                            className="w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition mt-2"
-                        >
-                            Cancel
-                        </button>
-                    )}
+						<button
+							type="button"
+							onClick={resetForm}
+							className="w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition mt-2"
+						>
+							Cancel
+						</button>
+					)}
 				</form>
 
 				{error && <p className="text-red-500 mt-4">{error}</p>}
@@ -250,27 +277,27 @@ export default function ProductPage() {
 			</div>
 
 			<div className="mt-8 w-full max-w-lg">
-					<div className="">
-						<h3 className="text-xl font-semibold text-gray-800 mb-4">Product Records</h3>
-						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-							{sales && sales.map((sale) => (
-								<div key={sale._id} className="bg-white p-4 rounded-lg shadow-md">
-									<h4 className="text-lg font-semibold">{sale.selectedProduct}</h4>
-									<p>Quantity: {sale.quantity} Kg</p>
-									<p>Actual Cost: {sale.actualCost} per Kg</p>
-									<p>Selling Cost: {sale.sellingCost}</p>
-									<p>Date: {new Date(sale.date).toLocaleDateString()}</p>
-									<button
-										onClick={() => handleEdit(sale)}
-										className="mt-2 w-full bg-yellow-500 text-white py-1 rounded-lg hover:bg-yellow-600"
-									>
-										Edit
-									</button>
-								</div>
-							))}
-						</div>
+				<div className="">
+					<h3 className="text-xl font-semibold text-gray-800 mb-4">Product Records</h3>
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+						{sales && sales.map((sale) => (
+							<div key={sale._id} className="bg-white p-4 rounded-lg shadow-md">
+								<h4 className="text-lg font-semibold">{sale.selectedProduct}</h4>
+								<p>Quantity: {sale.quantity} Kg</p>
+								<p>Actual Price: ₹{sale.actualCost} per Kg</p>
+								<p>Selling Price: ₹{sale.sellingCost} per Kg</p>
+								<p>Date: {new Date(sale.date).toLocaleDateString()}</p>
+								<button
+									onClick={() => handleEdit(sale)}
+									className="mt-2 w-full bg-yellow-500 text-white py-1 rounded-lg hover:bg-yellow-600"
+								>
+									Edit
+								</button>
+							</div>
+						))}
 					</div>
 				</div>
+			</div>
 		</div>
 	);
 }
