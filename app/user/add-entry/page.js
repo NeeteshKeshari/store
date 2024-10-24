@@ -16,7 +16,7 @@ export default function AddEntry() {
     const [isEdit, setIsEdit] = useState(false);
     const [editId, setEditId] = useState(null);
 
-    const storedUser = Cookies.get('userMobile');
+    const userNum = Cookies.get('userMobile');
     // Fetch entry list
     const fetchEntryList = async () => {
         try {
@@ -27,9 +27,7 @@ export default function AddEntry() {
             });
             const data = await res.json();
             // Filter data based on userNum
-            console.log(data)
-            const filteredData = data.filter(entry => entry.userNum?.toString() === storedUser.toString());
-            console.log(filteredData)
+            const filteredData = data.filter(entry => entry.userNum?.toString() === userNum.toString());
             setEntryList(filteredData);
         } catch (error) {
             setError("Failed to fetch entry list.");
@@ -37,10 +35,10 @@ export default function AddEntry() {
     };
 
     useEffect(() => {
-        if (storedUser) {
+        if (userNum) {
             fetchEntryList();
         }
-    }, [storedUser]);
+    }, [userNum]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -76,7 +74,7 @@ export default function AddEntry() {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${Cookies.get('authToken')}`
                 },
-                body: JSON.stringify({ productName, quantity, storedUser, approvalStatus, date: currentDate }),
+                body: JSON.stringify({ productName, quantity, userNum, approvalStatus, date: currentDate }),
             });
 
             if (res.ok) {
@@ -118,14 +116,6 @@ export default function AddEntry() {
             const quantity = entry.quantity;
             const approvalStatus = 'Submitted';
 
-            console.log('Body:', {
-                productName,
-                quantity,
-                storedUser,
-                approvalStatus,
-                date: currentDate,
-            });
-
             const res = await fetch(url, {
                 method: "PUT",
                 headers: {
@@ -135,7 +125,7 @@ export default function AddEntry() {
                 body: JSON.stringify({
                     productName,
                     quantity,
-                    storedUser,
+                    userNum,
                     approvalStatus,
                     date: currentDate,
                 }),
@@ -185,7 +175,7 @@ export default function AddEntry() {
                         <label className="block text-gray-700">Phone Number</label>
                         <input
                             type="number"
-                            value={storedUser}
+                            value={userNum}
                             readOnly
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                         />
@@ -287,7 +277,7 @@ export default function AddEntry() {
                                 }
                                 {entry.approvalStatus === 'Submitted' &&
                                     <a
-                                        href={`https://wa.me/9560366334?text=Entry%20Details:%0AProduct%20Name:%20${encodeURIComponent(entry.productName)}%0ABy:%20${encodeURIComponent(entry.userNum)}%0AQuantity:%20${encodeURIComponent(entry.quantity)}%20packets%0ADate:%20${encodeURIComponent(new Date(entry.date).toLocaleDateString())}%0AApproval%20Status:%20${encodeURIComponent(entry.approvalStatus)}`}
+                                        href={`https://wa.me/9919057758?text=Entry%20Details:%0AProduct%20Name:%20${encodeURIComponent(entry.productName)}%0ABy:%20${encodeURIComponent(entry.userNum)}%0AQuantity:%20${encodeURIComponent(entry.quantity)}%20packets%0ADate:%20${encodeURIComponent(new Date(entry.date).toLocaleDateString())}%0AApproval%20Status:%20${encodeURIComponent(entry.approvalStatus)}`}
                                         target="_blank"
                                         className="mt-4 w-full bg-green-600 text-white text-center px-4 py-2 rounded hover:bg-green-700"
                                     >Send WhatsApp</a>

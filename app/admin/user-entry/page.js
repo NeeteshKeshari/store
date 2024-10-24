@@ -11,7 +11,9 @@ export default function UserEntry() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [entryList, setEntryList] = useState([]);
-    const [userNum, setUserNum] = useState('');
+    // const [userNum, setUserNum] = useState('');
+    const storedUser = Cookies.get('userMobile');
+
 
     // Fetch entry list
     const fetchEntryList = async () => {
@@ -30,19 +32,12 @@ export default function UserEntry() {
         }
     };
 
-    useEffect(() => {
-        // Check for user in localStorage on page load or refresh
-        const storedUser = localStorage.getItem('userNumber'); // Corrected key name
-        if (storedUser) {
-            setUserNum(storedUser);
-        }
-    }, []);
 
     useEffect(() => {
-        if (userNum) {
+        if (storedUser) {
             fetchEntryList();
         }
-    }, [userNum]);
+    }, [storedUser]);
 
     const handleApproval = async (entry) => {
         try {
@@ -53,7 +48,7 @@ export default function UserEntry() {
             const productName = entry.productName;
             const quantity = entry.quantity;
             const approvalStatus = 'Approved';
-
+            const userNum = entry?.userNum;
             console.log('Body:', {
                 productName,
                 quantity,
