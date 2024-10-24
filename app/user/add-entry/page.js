@@ -28,7 +28,7 @@ export default function AddEntry() {
             const data = await res.json();
             // Filter data based on userNum
             console.log(data)
-            const filteredData = data.filter(entry => entry.userNum === storedUser);
+            const filteredData = data.filter(entry => entry.userNum?.toString() === storedUser.toString());
             console.log(filteredData)
             setEntryList(filteredData);
         } catch (error) {
