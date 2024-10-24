@@ -15,7 +15,6 @@ export default function AddEntry() {
     const [entryList, setEntryList] = useState([]);
     const [isEdit, setIsEdit] = useState(false);
     const [editId, setEditId] = useState(null);
-    const [userNum, setUserNum] = useState('');
 
     const storedUser = Cookies.get('userMobile');
     // Fetch entry list
@@ -38,10 +37,10 @@ export default function AddEntry() {
     };
 
     useEffect(() => {
-        if (userNum) {
+        if (storedUser) {
             fetchEntryList();
         }
-    }, [userNum]);
+    }, [storedUser]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -77,7 +76,7 @@ export default function AddEntry() {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${Cookies.get('authToken')}`
                 },
-                body: JSON.stringify({ productName, quantity, userNum, approvalStatus, date: currentDate }),
+                body: JSON.stringify({ productName, quantity, storedUser, approvalStatus, date: currentDate }),
             });
 
             if (res.ok) {
@@ -122,7 +121,7 @@ export default function AddEntry() {
             console.log('Body:', {
                 productName,
                 quantity,
-                userNum,
+                storedUser,
                 approvalStatus,
                 date: currentDate,
             });
@@ -135,7 +134,7 @@ export default function AddEntry() {
                 body: JSON.stringify({
                     productName,
                     quantity,
-                    userNum,
+                    storedUser,
                     approvalStatus,
                     date: currentDate,
                 }),
@@ -185,7 +184,7 @@ export default function AddEntry() {
                         <label className="block text-gray-700">Phone Number</label>
                         <input
                             type="number"
-                            value={userNum}
+                            value={storedUser}
                             readOnly
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                         />
