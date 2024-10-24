@@ -17,6 +17,7 @@ export default function AddEntry() {
     const [editId, setEditId] = useState(null);
     const [userNum, setUserNum] = useState('');
 
+    const storedUser = Cookies.get('userMobile');
     // Fetch entry list
     const fetchEntryList = async () => {
         try {
@@ -26,25 +27,15 @@ export default function AddEntry() {
                 }
             });
             const data = await res.json();
-
             // Filter data based on userNum
-            console.log(userNum)
-            const filteredData = data.filter(entry => entry.userNum === userNum);
+            console.log(data)
+            const filteredData = data.filter(entry => entry.userNum === storedUser);
             console.log(filteredData)
-
-            // Set the filtered entry list
             setEntryList(filteredData);
         } catch (error) {
             setError("Failed to fetch entry list.");
         }
     };
-
-    useEffect(() => {
-        const storedUser = Cookies.get('userMobile'); // Corrected key name
-        if (storedUser) {
-            setUserNum(storedUser);
-        }
-    }, []);
 
     useEffect(() => {
         if (userNum) {
@@ -305,7 +296,7 @@ export default function AddEntry() {
                         </div>
                     ))
                 ) : (
-                    <p className="text-center text-gray-600">No entries found for this user.</p>
+                    <p className="text-center text-gray-600">No entries found.</p>
                 )}
             </div>
         </div>
