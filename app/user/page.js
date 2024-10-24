@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '../components/Header';
 import Cookies from 'js-cookie';
-const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+const apiUrl = 'https://stock-node-55ci.onrender.com';
 import { usePathname } from 'next/navigation'
 export default function AdminLogin() {
   const [mobile, setMobile] = useState('');

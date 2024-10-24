@@ -34,7 +34,7 @@ export default function AddEntry() {
 
     useEffect(() => {
         // Check for user in localStorage on page load or refresh
-        const storedUser = localStorage.getItem('userNumber'); // Corrected key name
+        const storedUser = Cookies.get('userMobile'); // Corrected key name
         if (storedUser) {
             setUserNum(storedUser);
         }
@@ -174,7 +174,7 @@ export default function AddEntry() {
             <div className="w-full max-w-lg bg-white rounded-lg shadow-md p-6 mb-8">
                 <div className='flex flex-row items-start'>
                     <div className='w-1/4 mt-1'>
-                        <Link href='/admin/dashboard' className='text-xs border border-gray-500 p-1 px-2 rounded-md hover:border-blue-600 hover:text-blue-600'>Back</Link>
+                        <Link href='/user/dashboard' className='text-xs border border-gray-500 p-1 px-2 rounded-md hover:border-blue-600 hover:text-blue-600'>Back</Link>
                     </div>
                     <div className='w-1/2'>
                         <h2 className="text-2xl font-semibold text-gray-800 mb-4 text-center">
