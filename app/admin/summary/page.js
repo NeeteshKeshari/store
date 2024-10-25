@@ -67,7 +67,7 @@ const StockManagementDashboard = () => {
 		return manufacturing.reduce((total, item) => {
 			const product = products.find(prod => prod.selectedProduct === item.productName);
 			const soldItemCount = sales.find(saleItem => saleItem.product === item.productName);
-			// console.log(total + (product ? soldItemCount.quantity : 0) + (product ? product.packingCharge * soldItemCount.quantity : 0) + (product ? product.pisaiCharge * soldItemCount.quantity : 0) + (product ? product.pouchCharge * soldItemCount.quantity : 0) + (product ? product.actualCost * soldItemCount.quantity : 0) + (product ? (product.transportCharge) / 100 * soldItemCount.quantity : 0))
+			console.log(total + (product ? soldItemCount.quantity : 0) + (product ? product.packingCharge * soldItemCount.quantity : 0) + (product ? product.pisaiCharge * soldItemCount.quantity : 0) + (product ? product.pouchCharge * soldItemCount.quantity : 0) + (product ? product.actualCost * soldItemCount.quantity : 0) + (product ? (product.transportCharge) / 100 * soldItemCount.quantity : 0))
 			return total + (product ? product.packingCharge * soldItemCount?.quantity : 0) + (product ? product.pisaiCharge * soldItemCount?.quantity : 0) + (product ? product.pouchCharge * soldItemCount?.quantity : 0) + (product ? product.actualCost * soldItemCount?.quantity : 0) + (product ? (product.transportCharge) / 100 * soldItemCount?.quantity : 0);
 		}, 0);
 	};
@@ -90,6 +90,7 @@ const StockManagementDashboard = () => {
 	const calculateTotalIncome = () => {
 		const totalSales = calculateTotalSales();
 		const totalManufacturingCost = calculateTotalManufacturingCost();
+		console.log(totalSales, totalManufacturingCost)
 		if (totalSales === 0) {
 			return 'No Sell';
 		}
