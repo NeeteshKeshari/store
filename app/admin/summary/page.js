@@ -49,7 +49,7 @@ const StockManagementDashboard = () => {
 	}, []);
 
 	const calculateTotalSales = () => {
-		return sales.reduce((total, sale) => total + sale.cost * sale.quantity, 0);
+		return sales.reduce((total, sale) => total + sale.cost * sale?.quantity, 0);
 	};
 
 	const calculateTotalDue = () => {
@@ -77,9 +77,9 @@ const StockManagementDashboard = () => {
 		return products.map(product => {
 			const totalSold = sales
 				.filter(sale => sale.product === product.selectedProduct)
-				.reduce((total, sale) => total + sale.quantity, 0);
+				.reduce((total, sale) => total + sale?.quantity, 0);
 
-			const remainingQuantity = product.quantity;
+			const remainingQuantity = product?.quantity;
 
 			return {
 				selectedProduct: product.selectedProduct,
