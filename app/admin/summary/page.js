@@ -64,14 +64,81 @@ const StockManagementDashboard = () => {
 	};
 
 	const calculateTotalManufacturingCost = () => {
-		return manufacturing.reduce((total, item) => {
-			const product = products.find(prod => prod.selectedProduct === item.productName);
-			const soldItemCount = sales.find(saleItem => saleItem.product === item.productName);
-			console.log(product, soldItemCount)
-			console.log(total + (product ? soldItemCount?.quantity : 0) + (product ? product.packingCharge * soldItemCount?.quantity : 0) + (product ? product.pisaiCharge * soldItemCount?.quantity : 0) + (product ? product.pouchCharge * soldItemCount?.quantity : 0) + (product ? product.actualCost * soldItemCount?.quantity : 0) + (product ? (product.transportCharge) / 100 * soldItemCount.quantity : 0))
-			return total + (product ? product.packingCharge * soldItemCount?.quantity : 0) + (product ? product.pisaiCharge * soldItemCount?.quantity : 0) + (product ? product.pouchCharge * soldItemCount?.quantity : 0) + (product ? product.actualCost * soldItemCount?.quantity : 0) + (product ? (product.transportCharge) / 100 * soldItemCount?.quantity : 0);
-		}, 0);
+		let total = 0; // Initialize total cost
+		console.log("Starting total manufacturing cost calculation...");
+	
+		// Iterate over each item in the manufacturing array
+		products.forEach(item => {
+			console.log(`Processing manufacturing item:`, item);
+	
+			// Find the product details for the current manufacturing item
+			const product = products.find(prod => prod.selectedProduct === item.selectedProduct);
+			if (!product) {
+				console.log(`No matching product found for item: ${item.selectedProduct}`);
+				return; // If no matching product, skip
+			}
+			
+			console.log(`Found product for ${item.selectedProduct}:`, product);
+	
+			// Find all sales entries for the current product
+			const soldItems = sales.filter(saleItem => saleItem.product === item.selectedProduct);
+			if (soldItems.length === 0) {
+				console.log(`No sales found for product: ${item.selectedProduct}`);
+				return; // If no sales for the product, skip
+			}
+	
+			console.log(`Found sales for ${item.selectedProduct}:`, soldItems);
+	
+			// Initialize the total cost for this product
+			let productTotalCost = 0;
+	
+			// Sum up the costs for each sale entry
+			soldItems.forEach(soldItem => {
+				console.log(`Processing sale item:`, soldItem);
+	
+				const quantity = parseInt(soldItem.quantity, 10);
+				const packingCharge = parseInt(product.packingCharge, 10);
+				const pisaiCharge = parseInt(product.pisaiCharge, 10);
+				const pouchCharge = parseInt(product.pouchCharge, 10);
+				const actualCost = parseInt(product.actualCost, 10);
+				const transportCharge = parseInt(product.transportCharge, 10);
+	
+				console.log(`Charges for ${item.selectedProduct}:`);
+				console.log(`- Quantity: ${quantity}`);
+				console.log(`- Packing Charge: ${packingCharge}`);
+				console.log(`- Pisai Charge: ${pisaiCharge}`);
+				console.log(`- Pouch Charge: ${pouchCharge}`);
+				console.log(`- Actual Cost: ${actualCost}`);
+				console.log(`- Transport Charge: ${transportCharge}`);
+	
+				// Calculate total cost for the current sale item
+				const saleItemCost =
+					(packingCharge + pisaiCharge + pouchCharge + actualCost) * quantity +
+					((transportCharge / 100) * quantity);
+	
+				console.log(`Calculated cost for this sale item: ${saleItemCost}`);
+	
+				// Add the sale item cost to the product total cost
+				productTotalCost += saleItemCost;
+			});
+	
+			console.log(`Total cost for product ${item.selectedProduct}: ${productTotalCost}`);
+	
+			// Add the total cost for this product to the overall total
+			total += productTotalCost;
+		});
+	
+		console.log(`Final total manufacturing cost: ${total}`);
+		return total; // Return the final total manufacturing cost
 	};
+	
+	
+	
+	
+	
+	
+	
+	
 
 	const calculateRemainingStock = () => {
 		return products.map(product => {
@@ -91,7 +158,7 @@ const StockManagementDashboard = () => {
 	const calculateTotalIncome = () => {
 		const totalSales = calculateTotalSales();
 		const totalManufacturingCost = calculateTotalManufacturingCost();
-		console.log(totalSales, totalManufacturingCost)
+		// console.log(totalSales, totalManufacturingCost)
 		if (totalSales === 0) {
 			return 'No Sell';
 		}

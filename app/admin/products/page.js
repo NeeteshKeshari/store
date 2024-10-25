@@ -7,15 +7,15 @@ import Cookies from 'js-cookie';
 
 export default function ProductPage() {
 	const [selectedProduct, setSelectedProduct] = useState("Besan");
-	const [quantity, setQuantity] = useState("");
-	const [actualCost, setActualCost] = useState("");
-	const [sellingCost, setSellingCost] = useState("");
+	const [quantity, setQuantity] = useState();
+	const [actualCost, setActualCost] = useState();
+	const [sellingCost, setSellingCost] = useState();
 	const [date, setDate] = useState("");
-	const [packingCharge, setPackingCharge] = useState("");
-	const [pouchCharge, setPouchCharge] = useState("");
-	const [transportCharge, setTransportCharge] = useState("");
-	const [extraCharge, setExtraCharge] = useState("");
-	const [pisaiCharge, setPisaiCharge] = useState("");
+	const [packingCharge, setPackingCharge] = useState();
+	const [pouchCharge, setPouchCharge] = useState();
+	const [transportCharge, setTransportCharge] = useState();
+	const [extraCharge, setExtraCharge] = useState();
+	const [pisaiCharge, setPisaiCharge] = useState();
 	const [error, setError] = useState("");
 	const [success, setSuccess] = useState("");
 	const [sales, setSales] = useState([]);
@@ -241,7 +241,7 @@ export default function ProductPage() {
 							type="number"
 							value={pisaiCharge}
 							onChange={(e) => setPisaiCharge(e.target.value)}
-							className="w-full px-3 p-6 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+							className="w-full px-3 p-6 pl-6 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
 						/>
 						</div>
 						</div>
