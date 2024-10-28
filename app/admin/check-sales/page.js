@@ -392,58 +392,62 @@ export default function SalesPage() {
                         />
                     )}
                     {producList.map((productItem, index) => (
-                        <div key={index} className="space-y-4 border-b pb-4 mb-4">
+                        <div key={index} className="space-y-4 border-b p-4 rounded-md mb-4 bg-gray-200 relative">
                             <h3 className="font-semibold text-lg">Product {index + 1}</h3>
 
-                            {/* Product Name Dropdown */}
-                            <div>
-                                <label className="block text-gray-700">Product Name</label>
-                                <select
-                                    value={productItem.product}
-                                    onChange={(e) => handleProductChange(index, e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                                >
-                                    <option value="">Select a product</option>
-                                    {productList.map((product) => (
-                                        <option key={product._id} value={product.selectedProduct}>
-                                            {product.selectedProduct}
-                                        </option>
-                                    ))}
-                                </select>
+                            <div className='flex flex-row gap-x-4'>
+                                {/* Product Name Dropdown */}
+                                <div className='w-full'>
+                                    <label className="block text-gray-700">Product Name</label>
+                                    <select
+                                        value={productItem.product}
+                                        onChange={(e) => handleProductChange(index, e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                                    >
+                                        <option value="">Select a product</option>
+                                        {productList.map((product) => (
+                                            <option key={product._id} value={product.selectedProduct}>
+                                                {product.selectedProduct}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Quantity Input */}
+                                <div className='w-full'>
+                                    <label className="block text-gray-700">Quantity (in Kg)</label>
+                                    <input
+                                        type="number"
+                                        value={productItem.quantity}
+                                        onChange={(e) => handleQuantityChange(index, e.target.value)}
+                                        placeholder="Enter quantity"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                                    />
+                                </div>
                             </div>
 
-                            {/* Quantity Input */}
-                            <div>
-                                <label className="block text-gray-700">Quantity (in Kg)</label>
-                                <input
-                                    type="number"
-                                    value={productItem.quantity}
-                                    onChange={(e) => handleQuantityChange(index, e.target.value)}
-                                    placeholder="Enter quantity"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                                />
-                            </div>
+                            <div className='flex flex-row gap-x-4'>
+                                {/* Total Quantity (Read-only) */}
+                                <div className='w-full'>
+                                    <label className="block text-gray-700">Total Quantity</label>
+                                    <input
+                                        type="number"
+                                        value={productItem.totalQuantity}
+                                        readOnly
+                                        className="w-full px-3 py-2 border border-gray-300 bg-gray-100 rounded-lg focus:outline-none"
+                                    />
+                                </div>
 
-                            {/* Total Quantity (Read-only) */}
-                            <div>
-                                <label className="block text-gray-700">Total Quantity</label>
-                                <input
-                                    type="number"
-                                    value={productItem.totalQuantity}
-                                    readOnly
-                                    className="w-full px-3 py-2 border border-gray-300 bg-gray-100 rounded-lg focus:outline-none"
-                                />
-                            </div>
-
-                            {/* Cost per Kg (Read-only, populated based on selected product) */}
-                            <div>
-                                <label className="block text-gray-700">Cost (per Kg)</label>
-                                <input
-                                    type="number"
-                                    value={productItem.cost}
-                                    readOnly
-                                    className="w-full px-3 py-2 border border-gray-300 bg-gray-100 rounded-lg focus:outline-none"
-                                />
+                                {/* Cost per Kg (Read-only, populated based on selected product) */}
+                                <div className='w-full'>
+                                    <label className="block text-gray-700">Cost (per Kg)</label>
+                                    <input
+                                        type="number"
+                                        value={productItem.cost}
+                                        readOnly
+                                        className="w-full px-3 py-2 border border-gray-300 bg-gray-100 rounded-lg focus:outline-none"
+                                    />
+                                </div>
                             </div>
 
                             {/* Remove Product Button */}
@@ -451,9 +455,9 @@ export default function SalesPage() {
                                 <button
                                     type="button"
                                     onClick={() => removeProduct(index)}
-                                    className="text-white bg-red-500 hover:bg-red-700 px-2 py-1 rounded-lg text-sm mt-2"
+                                    className="text-white absolute right-4 top-0 bg-red-500 hover:bg-red-700 w-[40px] cursor-pointer h-[40px] mt-[2px] rounded text-lg font-bold"
                                 >
-                                    Remove Product
+                                    x
                                 </button>
                             )}
                         </div>
@@ -463,7 +467,7 @@ export default function SalesPage() {
                     <button
                         type="button"
                         onClick={addProduct}
-                        className="text-blue-500 hover:text-blue-700 mt-2"
+                        className="bg-green-500 px-2 py-1 rounded text-white hover:bg-green-700 mt-2"
                     >
                         Add Another Product
                     </button>
@@ -527,29 +531,31 @@ export default function SalesPage() {
                             Add More Payment
                         </button>
                     </div>
-                    <div>
-                        <label className="block text-gray-700">Total Amount</label>
-                        <div className='relative'>
-                            <div className='addRupee'>
-                                <input
-                                    type="text"
-                                    value={totalAmount}
-                                    readOnly
-                                    className="w-full px-3 py-2 pl-6 border border-gray-300 rounded-lg bg-gray-100"
-                                />
+                    <div className='flex flex-row gap-x-4'>
+                        <div className='w-full'>
+                            <label className="block text-gray-700">Total Amount</label>
+                            <div className='relative'>
+                                <div className='addRupee'>
+                                    <input
+                                        type="text"
+                                        value={totalAmount}
+                                        readOnly
+                                        className="w-full px-3 py-2 pl-6 border border-gray-300 rounded-lg bg-gray-100"
+                                    />
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div>
-                        <label className="block text-gray-700">Amount Due</label>
-                        <div className='relative'>
-                            <div className='addRupee'>
-                                <input
-                                    type="text"
-                                    value={totalDue}
-                                    readOnly
-                                    className="w-full px-3 py-2 pl-6 border border-gray-300 rounded-lg bg-gray-100"
-                                />
+                        <div className='w-full'>
+                            <label className="block text-gray-700">Amount Due</label>
+                            <div className='relative'>
+                                <div className='addRupee'>
+                                    <input
+                                        type="text"
+                                        value={totalDue}
+                                        readOnly
+                                        className="w-full px-3 py-2 pl-6 border border-gray-300 rounded-lg bg-gray-100"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
