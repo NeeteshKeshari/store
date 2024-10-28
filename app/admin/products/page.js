@@ -13,7 +13,6 @@ export default function ProductPage() {
 	const [date, setDate] = useState("");
 	const [packingCharge, setPackingCharge] = useState();
 	const [pouchCharge, setPouchCharge] = useState();
-	const [transportCharge, setTransportCharge] = useState();
 	const [extraCharge, setExtraCharge] = useState();
 	const [pisaiCharge, setPisaiCharge] = useState();
 	const [error, setError] = useState("");
@@ -52,7 +51,6 @@ export default function ProductPage() {
 				date: new Date().toISOString(),
 				packingCharge,
 				pouchCharge,
-				transportCharge,
 				extraCharge,
 				pisaiCharge,
 			};
@@ -98,7 +96,6 @@ export default function ProductPage() {
 		setDate(sale.date);
 		setPackingCharge(sale.packingCharge);
 		setPouchCharge(sale.pouchCharge);
-		setTransportCharge(sale.transportCharge);
 		setExtraCharge(sale.extraCharge);
 		setPisaiCharge(sale.pisaiCharge);
 		setEditingSaleId(sale._id);
@@ -112,7 +109,6 @@ export default function ProductPage() {
 		setDate("");
 		setPackingCharge("");
 		setPouchCharge("");
-		setTransportCharge("");
 		setExtraCharge("");
 		setPisaiCharge("");
 		setEditingSaleId(null);
@@ -202,19 +198,6 @@ export default function ProductPage() {
 							type="number"
 							value={pouchCharge}
 							onChange={(e) => setPouchCharge(e.target.value)}
-							className="w-full px-3 pl-6 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-						/>
-						</div>
-						</div>
-					</div>
-					<div>
-						<label className="block text-gray-700">Transport Charge (Total)</label>
-						<div className='relative'>
-							<div className='addRupee'>
-						<input
-							type="number"
-							value={transportCharge}
-							onChange={(e) => setTransportCharge(e.target.value)}
 							className="w-full px-3 pl-6 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
 						/>
 						</div>

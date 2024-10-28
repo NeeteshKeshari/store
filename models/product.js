@@ -9,7 +9,7 @@ const productSchema = new mongoose.Schema({
   date: { type: Date, required: true },
   packingCharge: { type: Number, required: true },
   pouchCharge: { type: Number, required: true },
-  transportCharge: { type: Number, required: true },
+
   extraCharge: { type: Number, default: 0 },
   pisaiCharge: { type: Number, required: true },
 });

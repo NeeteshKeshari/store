@@ -101,7 +101,6 @@ const StockManagementDashboard = () => {
 				const pisaiCharge = parseInt(product.pisaiCharge, 10);
 				const pouchCharge = parseInt(product.pouchCharge, 10);
 				const actualCost = parseInt(product.actualCost, 10);
-				const transportCharge = parseInt(product.transportCharge, 10);
 	
 				console.log(`Charges for ${item.selectedProduct}:`);
 				console.log(`- Quantity: ${quantity}`);
@@ -109,12 +108,10 @@ const StockManagementDashboard = () => {
 				console.log(`- Pisai Charge: ${pisaiCharge}`);
 				console.log(`- Pouch Charge: ${pouchCharge}`);
 				console.log(`- Actual Cost: ${actualCost}`);
-				console.log(`- Transport Charge: ${transportCharge}`);
 	
 				// Calculate total cost for the current sale item
 				const saleItemCost =
-					(packingCharge + pisaiCharge + pouchCharge + actualCost) * quantity +
-					((transportCharge / 100) * quantity);
+					(packingCharge + pisaiCharge + pouchCharge + actualCost) * quantity;
 	
 				console.log(`Calculated cost for this sale item: ${saleItemCost}`);
 	

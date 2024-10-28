@@ -111,7 +111,7 @@ export default function SalesPage() {
         setTotalOverallDueNew(totalOverallDue);
     };
 
-    const handleCustomerChangeNew = (event) => {
+    const handleCustomerFilter = (event) => {
         const selectedCustomerName = event.target.value;
         setSelectedCustomerNew(selectedCustomerName);
 
@@ -144,87 +144,114 @@ export default function SalesPage() {
         }
     };
 
+    const [producList, setProducList] = useState([{ product: '', productId: '', quantity: '', cost: '', totalQuantity: '' }]);
+
+    // Function to handle product selection and auto-fill total quantity and cost
+    const handleProductChange = (index, selectedProductName) => {
+        const selectedProduct = productList.find(product => product.selectedProduct === selectedProductName);
+        const updatedProductList = [...producList];
+        updatedProductList[index].product = selectedProductName;
+        updatedProductList[index].totalQuantity = selectedProduct.quantity;
+        updatedProductList[index].cost = selectedProduct.sellingCost;
+        updatedProductList[index].productId = selectedProduct._id;
+        setProducList(updatedProductList);
+    };
+
+    // Function to handle quantity change for a specific product
+    const handleQuantityChange = (index, quantity) => {
+        const updatedProductList = [...producList];
+        updatedProductList[index].quantity = quantity;
+        setProducList(updatedProductList);
+    };
+
+    // Function to add a new product entry to producList
+    const addProduct = () => {
+        setProducList([...producList, { product: '', quantity: '', productId: '', cost: '', totalQuantity: '' }]);
+    };
+
+    // Function to remove a specific product entry from producList
+    const removeProduct = (index) => {
+        const updatedProductList = producList.filter((_, i) => i !== index);
+        setProducList(updatedProductList);
+    };
+
+    const [totalAmount, setTotalAmount] = useState(0);
+
+    // Calculate total amount and total due
     const handleCalculateTotal = () => {
         setError("");
-        if (!quantity || !cost || isNaN(quantity) || isNaN(cost) || quantity <= 0 || cost <= 0) {
-            setError("Please enter valid Quantity and Cost.");
-            return;
-        }
+        // Calculate the total amount for all products
+        const calculatedTotalAmount = producList.reduce((sum, item) => {
+            return sum + (item.quantity * item.cost);
+        }, 0);
 
-        const total = parseFloat(quantity) * parseFloat(cost);
-        const totalPaid = amountPaid.reduce((acc, payment) => acc + parseFloat(payment.amount || 0), 0);
-        const due = total - totalPaid;
-        setTotalDue(total.toFixed(2));
-        setAmountDue(due.toFixed(2));
+        // Calculate the total payments made
+        const totalPayments = amountPaid.reduce((sum, payment) => {
+            return sum + parseFloat(payment.amount || 0);
+        }, 0);
+
+        // Calculate the total due
+        const calculatedTotalDue = calculatedTotalAmount - totalPayments;
+
+        // Set the total amount and total due states
+        setTotalAmount(calculatedTotalAmount);
+        setTotalDue(calculatedTotalDue);
         setIsCalculated(true);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError("");
-        setSuccess("");
-
-        if (!isCalculated) {
-            setError("Please calculate the total before submitting.");
-            return;
-        }
-
-        console.log(quantityTotal, parseInt(quantity, 10))
-
-        if (parseInt(quantity, 10) > quantityTotal) {
-            setError("Selling over stock.");
-            return;
-        }
+    
+        // Prepare the payload based on the requirements
+        const payload = {
+            producList: producList.map(item => ({
+                product: item.product,
+                productId: item.productId,
+                quantity: item.quantity,
+                cost: item.cost,
+            })),
+            date: new Date(date).toISOString(),
+            customerName,
+            customerAddress,
+            amountPaid: amountPaid.map(payment => ({
+                amount: parseFloat(payment.amount),
+                date: new Date(payment.date).toISOString(),
+                _id: payment._id || undefined,
+            })),
+            amountDue: totalAmount,
+            totalDue: totalDue,
+        };
 
         try {
-            const payload = {
-                product,
-                productId,
-                quantity,
-                cost,
-                date: new Date().toISOString(),
-                customerName,
-                customerAddress,
-                amountPaid,
-                amountDue,
-                totalDue,
-            };
-
-            let res;
-            if (editingSaleId) {
-                res = await axios.put(`${apiUrl}/api/sales/${editingSaleId}`, payload, {
-                    headers: {
-                        "Authorization": `Bearer ${Cookies.get('authToken')}`
-                    }
-                });
-                // console.log(payload)
-                if (res.status === 200) {
-                    setSalesNew((prevSales) =>
-                        prevSales.map((sale) =>
-                            sale._id === editingSaleId ? { ...res.data } : sale
-                        )
-                    );
-                    setSuccess("Sale record updated successfully!");
-                    fetchSales();
-                    window.location.reload(false);
-                }
+            const response = await fetch(`${apiUrl}/api/sales`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": `Bearer ${Cookies.get('authToken')}`
+                },
+                body: JSON.stringify(payload),
+            });
+    
+            if (response.ok) {
+                const data = await response.json();
+                alert('Sale submitted successfully!');
+                
+                // Optional: Clear form state here if needed
+                setProducList([]); // Clear product list if appropriate
+                setDate('');
+                setCustomerName('');
+                setCustomerAddress('');
+                setAmountPaid([{ amount: '', date: '' }]); // Reset to initial payment structure if desired
+                setTotalDue(0);
+                setAmountDue(0);
             } else {
-                // console.log(payload)
-                res = await axios.post(`${apiUrl}/api/sales`, payload, {
-                    headers: {
-                        "Authorization": `Bearer ${Cookies.get('authToken')}`
-                    }
-                });
-                if (res.status === 201) {
-                    setSalesNew((prevSales) => [...prevSales, res.data]);
-                    setSuccess("Sale record added successfully!");
-                    fetchSales();
-                }
+                const errorData = await response.json();
+                console.error('Error:', errorData.message || errorData);
+                alert('Failed to submit sale. Please check your input.');
             }
-
-            resetForm();
-        } catch (err) {
-            setError("An error occurred. Please try again.");
+        } catch (error) {
+            console.error('Request error:', error);
+            alert('An error occurred while submitting. Please try again later.');
         }
     };
 
@@ -264,6 +291,23 @@ export default function SalesPage() {
         setSuccess("");
     };
 
+    
+
+// const handleCalculateTotal = () => {
+//     setError("");
+//     if (!quantity || !cost || isNaN(quantity) || isNaN(cost) || quantity <= 0 || cost <= 0) {
+//         setError("Please enter valid Quantity and Cost.");
+//         return;
+//     }
+
+//     const total = parseFloat(quantity) * parseFloat(cost);
+//     const totalPaid = amountPaid.reduce((acc, payment) => acc + parseFloat(payment.amount || 0), 0);
+//     const due = total - totalPaid;
+//     setTotalDue(total.toFixed(2));
+//     setAmountDue(due.toFixed(2));
+//     setIsCalculated(true);
+// };
+
     useEffect(() => {
         async function fetchSales() {
             try {
@@ -279,6 +323,7 @@ export default function SalesPage() {
         }
         fetchSales();
     }, []);
+    
 
     return (
         <div className="min-h-screen py-10 flex flex-col items-center justify-center bg-gray-100">
@@ -295,45 +340,7 @@ export default function SalesPage() {
                     <div className='w-1/4'></div>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-gray-700">Select Product</label>
-                        {/* <select
-                            value={product}
-                            onChange={(e) => setProduct(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                        >
-                            <option value="">Select Product</option>
-                            {console.log(productList)}
-                            {productList && productList.map((product) => (
-                                <option key={product._id} value={product.selectedProduct}>
-                                    {product.selectedProduct}
-                                </option>
-                            ))}
-                        </select> */}
-                        <select
-                            onChange={(e) => {
-                                const selectedProduct = e.target.value;
-                                // Find the selected product from productList
-                                const product = productList.find(prod => prod.selectedProduct === selectedProduct);
-                                // If product is found, set the cost
-                                if (product) {
-                                    setProduct(selectedProduct)
-                                    setCost(product.sellingCost); // Assuming setCost is your state setter for cost
-                                    setQuantityTotal(product.quantity);
-                                    setProductId(product._id);
-                                }
-                            }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 form-select"
-                        >
-                            <option value="">Select a product</option>
-                            {productList && productList.map((product) => (
-                                <option key={product._id} value={product.selectedProduct}>
-                                    {product.selectedProduct}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="mb-4">
+                <div className="mb-4">
                         <label className="block text-sm font-medium">Select Customer</label>
                         <select
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
@@ -384,38 +391,83 @@ export default function SalesPage() {
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md bg-gray-100"
                         />
                     )}
-                    <div>
-                        <label className="block text-gray-700">Total Quantity in Stock (in Kg)</label>
-                        <input
-                            type="number"
-                            value={quantityTotal}
-                            readOnly
-                            className="mt-1 block w-full p-2 border border-gray-300 font-bold rounded-md bg-gray-100"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-gray-700">Quantity (in Kg)</label>
-                        <input
-                            type="number"
-                            value={quantity}
-                            onChange={(e) => setQuantity(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                        />
-                    </div>
-                    <div className='relative'>
-                        <label className="block text-gray-700">Cost (per Kg)</label>
-                        <div className='relative'>
-                            <div className='addRupee'>
+                    {producList.map((productItem, index) => (
+                        <div key={index} className="space-y-4 border-b pb-4 mb-4">
+                            <h3 className="font-semibold text-lg">Product {index + 1}</h3>
+
+                            {/* Product Name Dropdown */}
+                            <div>
+                                <label className="block text-gray-700">Product Name</label>
+                                <select
+                                    value={productItem.product}
+                                    onChange={(e) => handleProductChange(index, e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                                >
+                                    <option value="">Select a product</option>
+                                    {productList.map((product) => (
+                                        <option key={product._id} value={product.selectedProduct}>
+                                            {product.selectedProduct}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Quantity Input */}
+                            <div>
+                                <label className="block text-gray-700">Quantity (in Kg)</label>
                                 <input
                                     type="number"
-                                    value={cost}
-                                    readOnly
-                                    onChange={(e) => setCost(e.target.value)}
-                                    className="addRupee mt-1 block w-full p-2 pl-6 border border-gray-300 font-bold rounded-md bg-gray-100"
+                                    value={productItem.quantity}
+                                    onChange={(e) => handleQuantityChange(index, e.target.value)}
+                                    placeholder="Enter quantity"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                                 />
                             </div>
+
+                            {/* Total Quantity (Read-only) */}
+                            <div>
+                                <label className="block text-gray-700">Total Quantity</label>
+                                <input
+                                    type="number"
+                                    value={productItem.totalQuantity}
+                                    readOnly
+                                    className="w-full px-3 py-2 border border-gray-300 bg-gray-100 rounded-lg focus:outline-none"
+                                />
+                            </div>
+
+                            {/* Cost per Kg (Read-only, populated based on selected product) */}
+                            <div>
+                                <label className="block text-gray-700">Cost (per Kg)</label>
+                                <input
+                                    type="number"
+                                    value={productItem.cost}
+                                    readOnly
+                                    className="w-full px-3 py-2 border border-gray-300 bg-gray-100 rounded-lg focus:outline-none"
+                                />
+                            </div>
+
+                            {/* Remove Product Button */}
+                            {index > 0 && (
+                                <button
+                                    type="button"
+                                    onClick={() => removeProduct(index)}
+                                    className="text-white bg-red-500 hover:bg-red-700 px-2 py-1 rounded-lg text-sm mt-2"
+                                >
+                                    Remove Product
+                                </button>
+                            )}
                         </div>
-                    </div>
+                    ))}
+
+                    {/* Add Another Product Button */}
+                    <button
+                        type="button"
+                        onClick={addProduct}
+                        className="text-blue-500 hover:text-blue-700 mt-2"
+                    >
+                        Add Another Product
+                    </button>
+
                     <div>
                         <label className="block text-gray-700">Date</label>
                         <input
@@ -481,7 +533,7 @@ export default function SalesPage() {
                             <div className='addRupee'>
                                 <input
                                     type="text"
-                                    value={totalDue}
+                                    value={totalAmount}
                                     readOnly
                                     className="w-full px-3 py-2 pl-6 border border-gray-300 rounded-lg bg-gray-100"
                                 />
@@ -494,9 +546,9 @@ export default function SalesPage() {
                             <div className='addRupee'>
                                 <input
                                     type="text"
-                                    value={amountDue}
+                                    value={totalDue}
                                     readOnly
-                                    className="w-full px-3 pl-6 py-2 border border-gray-300 rounded-lg bg-gray-100"
+                                    className="w-full px-3 py-2 pl-6 border border-gray-300 rounded-lg bg-gray-100"
                                 />
                             </div>
                         </div>
@@ -549,7 +601,7 @@ export default function SalesPage() {
                         id="customerSelect"
                         className="mt-1 block w-full sm:w-1/2 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm rounded-md"
                         value={selectedCustomerNew || ''}
-                        onChange={handleCustomerChangeNew}
+                        onChange={handleCustomerFilter}
                     >
                         <option value="" disabled>Select a customer</option>
                         <option value="All">All</option>
