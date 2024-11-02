@@ -13,52 +13,107 @@ const SalesList = ({ filteredSalesNew, handleEdit, fetchSales }) => {
     const [loading, setLoading] = useState(false);
     const [pdfLoadingId, setPdfLoadingId] = useState(null);
     const generatePDF = (id) => {
-        console.log(id)
-        setPdfLoadingId(id)
+        console.log(id);
+        setPdfLoadingId(id);
         const doc = new jsPDF();
-        filteredSalesNew.filter((ids => ids._id === id)).forEach((sale, index) => {
-            const startingY = 10 + index * 90; // Adjust starting Y based on index
-            // Get the page width to calculate the center
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const imageWidth = 30; // Width of the image
-            const centerX = (pageWidth - imageWidth) / 2;
+        const salesData = filteredSalesNew.find((sale) => sale._id === id);
+    
+        if (!salesData) {
+            console.error("Sale not found!");
+            return;
+        }
+    
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const imageWidth = 30;
+        const centerXImage = (pageWidth - imageWidth) / 2;
+    
+        const receiptText = 'Thank you for shopping with us!';
+        const brandName = 'Aarika Gold Pvt. Ltd.';
+        const brandAddress = 'Preetam Nagar Colony';
+        const brandCityAddress = 'Prayagraj, 211011 (UP) India';
+        const textWidth = doc.getTextWidth(receiptText);
+        const text1Width = doc.getTextWidth(brandName);
+        const text2Width = doc.getTextWidth(brandAddress);
+        const text3Width = doc.getTextWidth(brandCityAddress);
+        const centerXText = (pageWidth - textWidth) / 2;
+        const centerX1Text = (pageWidth - text1Width) / 2;
+        const centerX2Text = (pageWidth - text2Width) / 2;
+        const centerX3Text = (pageWidth - text3Width) / 2;
 
-            // Centering the "Aarika Gold Receipt" text
-            const receiptText = '|| Aarika Gold Receipt ||';
-            const textWidth = doc.getTextWidth(receiptText);
-            const centerXText = (pageWidth - textWidth) / 2;
-
-            doc.addImage(logoBase64, 'PNG', centerX, startingY, imageWidth, 40);
-            doc.text(receiptText, centerXText, startingY + 50);
-            doc.text('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=', 10, startingY + 60);
-            doc.text(`Billing Date: ${new Date(sale.date).toLocaleDateString('en-GB')}`, 10, startingY + 70);
-            doc.text(`Customer: ${sale.customerName}`, 10, startingY + 80);
-            doc.text(`Address: ${sale.customerAddress}`, 10, startingY + 90);
-            doc.text('.............................', 10, startingY + 100);
-            doc.text(`Product: ${sale.product}`, 10, startingY + 110);
-            doc.text(`Quantity: ${sale.quantity} Kg`, 10, startingY + 120);
-            doc.text(`Price: ${sale.cost}/- per Kg`, 10, startingY + 130);
-            doc.text(`Total: ${sale.totalDue}/-`, 10, startingY + 140);
-            doc.text('.............................', 10, startingY + 150);
-            // Adding payment records
-            doc.text('Payments:', 10, startingY + 160);
-            sale.amountPaid.forEach((payment, paymentIndex) => {
-                const paymentY = startingY + 170 + paymentIndex * 10;
-                doc.text(`${paymentIndex + 1})- ${payment.amount}/- on ${new Date(payment.date).toLocaleDateString('en-GB')}`, 10, paymentY);
-            });
-            // Separator between each sale
-            doc.text('.............................', 10, startingY + 170 + sale.amountPaid.length * 10);
-            doc.setFontSize(18);
-            doc.text(`Amount Due: ${sale.amountDue}/-`, 10, startingY + 180 + sale.amountPaid.length * 10);
-
-
+    
+        let currentY = 10;
+    
+        // Adding Logo
+        doc.addImage(logoBase64, 'PNG', centerXImage, currentY, imageWidth, 40);
+        currentY += 50;
+    
+        // Centered Receipt Header
+        doc.text(brandName, centerX1Text, currentY);
+        currentY += 7;
+        doc.text(brandAddress, centerX2Text, currentY);
+        currentY += 7;
+        doc.text(brandCityAddress, centerX3Text, currentY);
+        currentY += 10;
+        doc.text('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=', 10, currentY);
+        currentY += 10;
+    
+        // Sale Information
+        doc.text(`Billing Date: ${new Date(salesData.date).toLocaleDateString('en-GB')}`, 10, currentY);
+        currentY += 10;
+        doc.text(`Customer: ${salesData.customerName}`, 10, currentY);
+        currentY += 10;
+        doc.text(`Address: ${salesData.customerAddress}`, 10, currentY);
+        currentY += 10;
+        doc.text('.............................', 10, currentY);
+        currentY += 10;
+    
+        // Adding Products
+        doc.text('Products:', 10, currentY);
+        currentY += 10;
+    
+        salesData.productList.forEach((product, index) => {
+            const total = product.quantity * product.cost; // Calculate total for each product
+            doc.text(`${index + 1}) ${product.product} - Quantity: ${product.quantity}kg, Price: ${product.cost}/kg-, Total: ${total}/-`, 10, currentY);
+            currentY += 10;
+        });
+    
+        doc.text('.............................', 10, currentY);
+        currentY += 10;
+    
+        // Adding Payment Records
+        doc.text('Payments:', 10, currentY);
+        currentY += 10;
+        
+        salesData.amountPaid.forEach((payment, index) => {
+            doc.text(`${index + 1}) ${payment.amount}/- on ${new Date(payment.date).toLocaleDateString('en-GB')}`, 10, currentY);
+            currentY += 10;
         });
 
-        const pdfBlob = doc.output('blob');
+        doc.text('.............................', 10, currentY);
+        currentY += 10;
 
+        doc.setFontSize(18);
+
+        // Total Due Calculation
+        doc.text(`Total Due: ${salesData.totalDue}/-`, 10, currentY);
+        currentY += 10;
+        doc.text(`Amount Due: ${salesData.amountDue}/-`, 10, currentY);
+        currentY += 40;
+
+        doc.text(receiptText, centerXText, currentY);
+    
+        // Generate and Set PDF URL
+        const pdfBlob = doc.output('blob');
         const url = URL.createObjectURL(pdfBlob);
-        // console.log(url)
-        setPdfUrl(url); // Set the generated PDF URL for download
+        setPdfUrl(url);
+    
+        // Print PDF directly
+        // const printWindow = window.open(url);
+        // if (printWindow) {
+        //     printWindow.onload = () => {
+        //         printWindow.print();
+        //     };
+        // }
     };
 
     const deleteSale = async (SaleID) => {
@@ -108,12 +163,34 @@ const SalesList = ({ filteredSalesNew, handleEdit, fetchSales }) => {
                                 </div>
                             }
                             <h4 className="text-lg font-semibold">Bill Date: {new Date(sale.date).toLocaleDateString()}</h4>
-                            <h4 className="text-lg font-semibold">Customer: {sale.customerName}</h4>
-                            <p>Product: {sale.product}</p>
-                            <p>Quantity: {sale.quantity} Kg</p>
-                            <p>Cost: ₹{sale.cost} per Kg</p>
-                            <p>Total: ₹{sale.totalDue}</p>
-                            <p>Payment Record:
+                            <h4 className="text-lg font-semibold">{sale.customerName} - {sale.customerAddress}</h4>
+
+                            {/* Product List */}
+                            <p className="font-semibold">Product Details:</p>
+                            <table className="w-full text-sm mb-2 border-collapse border border-slate-400">
+                                <thead>
+                                    <tr>
+                                        <th className="border p-1 border-slate-300 text-left">Product</th>
+                                        <th className="border p-1 border-slate-300 text-left">Quantity (Kg)</th>
+                                        <th className="border p-1 border-slate-300 text-left">Cost per Kg (₹)</th>
+                                        <th className="border p-1 border-slate-300 text-left">Total Cost (₹)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {sale.productList.map((product, index) => (
+                                        <tr key={product._id}>
+                                            <td className="border p-1 border-slate-300">{product.product}</td>
+                                            <td className="border p-1 border-slate-300">{product.quantity}</td>
+                                            <td className="border p-1 border-slate-300">₹{product.cost}</td>
+                                            <td className="border p-1 border-slate-300">₹{product.quantity * product.cost}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+
+                            {/* Payment Record */}
+                            <p className="font-semibold">Payment Record:</p>
+                            {sale.amountPaid && sale.amountPaid.length > 0 ? (
                                 <table className='border-collapse text-sm w-full mb-1 border border-slate-400'>
                                     <thead>
                                         <tr>
@@ -122,7 +199,7 @@ const SalesList = ({ filteredSalesNew, handleEdit, fetchSales }) => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {sale.amountPaid && sale.amountPaid.map((item, index) => (
+                                        {sale.amountPaid.map((item, index) => (
                                             <tr key={index}>
                                                 <td className='border p-1 border-slate-300'>₹{item.amount}</td>
                                                 <td className='border p-1 border-slate-300'>{new Date(item.date).toLocaleDateString()}</td>
@@ -130,14 +207,21 @@ const SalesList = ({ filteredSalesNew, handleEdit, fetchSales }) => {
                                         ))}
                                     </tbody>
                                 </table>
-                            </p>
-                            <h4 className="text-lg font-semibold">Amount Due: ₹{sale.amountDue}</h4>
+                            ) : (
+                                <p className="text-gray-600">No Advance Payment</p>
+                            )}
+
+                            <h4 className="text-lg font-semibold">Total Amount Paid: ₹{sale.amountPaid.reduce((acc, payment) => acc + payment.amount, 0)}</h4>
+
+                            <h4 className="text-lg font-semibold">Amount Due: ₹{sale.totalDue}</h4>
+
                             <button
                                 onClick={() => handleEdit(sale)}
                                 className="mt-2 w-full bg-yellow-500 text-white py-1 rounded-lg hover:bg-yellow-600"
                             >
                                 Edit
                             </button>
+
                             <div className='flex flex-col'>
                                 <button
                                     onClick={() => generatePDF(sale._id)}
@@ -147,7 +231,6 @@ const SalesList = ({ filteredSalesNew, handleEdit, fetchSales }) => {
                                 </button>
                                 {pdfUrl && pdfLoadingId === sale._id && (
                                     <div className="">
-                                        {/* <QRCodeSVG value={pdfUrl} size={256} /> */}
                                         <a href={pdfUrl} download={fileName} onClick={() => setPdfLoadingId(null)} className="mt-2 w-full block text-center bg-green-500 text-white py-1 rounded-lg hover:bg-green-600">
                                             Download Bill
                                         </a>
@@ -157,6 +240,7 @@ const SalesList = ({ filteredSalesNew, handleEdit, fetchSales }) => {
                         </div>
                     );
                 })}
+
             </div>
 
 

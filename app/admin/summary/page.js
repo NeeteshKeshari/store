@@ -11,7 +11,6 @@ const StockManagementDashboard = () => {
 	const [manufacturing, setManufacturing] = useState([]);
 	const [loading, setLoading] = useState(true);
 
-
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
@@ -49,12 +48,18 @@ const StockManagementDashboard = () => {
 	}, []);
 
 	const calculateTotalSales = () => {
-		return sales.reduce((total, sale) => total + sale.cost * sale?.quantity, 0);
+		return sales.reduce((total, sale) => {
+			const saleTotal = sale.productList.reduce((productTotal, product) => {
+				return productTotal + (product.cost * product.quantity);
+			}, 0);
+			return total + saleTotal;
+		}, 0);
 	};
-
+	
 	const calculateTotalDue = () => {
 		return sales.reduce((total, sale) => total + sale.amountDue, 0);
 	};
+	
 
 	const calculateTotalPaid = () => {
 		return sales.reduce((total, sale) => {
@@ -65,36 +70,23 @@ const StockManagementDashboard = () => {
 
 	const calculateTotalManufacturingCost = () => {
 		let total = 0; // Initialize total cost
-		console.log("Starting total manufacturing cost calculation...");
-	
-		// Iterate over each item in the manufacturing array
-		products.forEach(item => {
-			console.log(`Processing manufacturing item:`, item);
-	
-			// Find the product details for the current manufacturing item
-			const product = products.find(prod => prod.selectedProduct === item.selectedProduct);
-			if (!product) {
-				console.log(`No matching product found for item: ${item.selectedProduct}`);
-				return; // If no matching product, skip
-			}
+		// console.log("Starting total manufacturing cost calculation...");
+		
+		// Iterate over each sale in the sales array
+		sales.forEach(sale => {
+			// console.log(`Processing sale:`, sale);
 			
-			console.log(`Found product for ${item.selectedProduct}:`, product);
+			sale.productList.forEach(soldItem => {
+				// console.log(`Processing sold item:`, soldItem);
 	
-			// Find all sales entries for the current product
-			const soldItems = sales.filter(saleItem => saleItem.product === item.selectedProduct);
-			if (soldItems.length === 0) {
-				console.log(`No sales found for product: ${item.selectedProduct}`);
-				return; // If no sales for the product, skip
-			}
-	
-			console.log(`Found sales for ${item.selectedProduct}:`, soldItems);
-	
-			// Initialize the total cost for this product
-			let productTotalCost = 0;
-	
-			// Sum up the costs for each sale entry
-			soldItems.forEach(soldItem => {
-				console.log(`Processing sale item:`, soldItem);
+				// Find the product details for the current sold item
+				const product = products.find(prod => prod.selectedProduct === soldItem.product);
+				if (!product) {
+					// console.log(`No matching product found for item: ${soldItem.product}`);
+					return; // Skip if no matching product
+				}
+				
+				// console.log(`Found product for ${soldItem.product}:`, product);
 	
 				const quantity = parseInt(soldItem.quantity, 10);
 				const packingCharge = parseInt(product.packingCharge, 10);
@@ -102,66 +94,56 @@ const StockManagementDashboard = () => {
 				const pouchCharge = parseInt(product.pouchCharge, 10);
 				const actualCost = parseInt(product.actualCost, 10);
 	
-				console.log(`Charges for ${item.selectedProduct}:`);
-				console.log(`- Quantity: ${quantity}`);
-				console.log(`- Packing Charge: ${packingCharge}`);
-				console.log(`- Pisai Charge: ${pisaiCharge}`);
-				console.log(`- Pouch Charge: ${pouchCharge}`);
-				console.log(`- Actual Cost: ${actualCost}`);
+				// console.log(`Charges for ${soldItem.product}:`);
+				// console.log(`- Quantity: ${quantity}`);
+				// console.log(`- Packing Charge: ${packingCharge}`);
+				// console.log(`- Pisai Charge: ${pisaiCharge}`);
+				// console.log(`- Pouch Charge: ${pouchCharge}`);
+				// console.log(`- Actual Cost: ${actualCost}`);
 	
-				// Calculate total cost for the current sale item
-				const saleItemCost =
-					(packingCharge + pisaiCharge + pouchCharge + actualCost) * quantity;
+				// Calculate total cost for the current sold item
+				const saleItemCost = (packingCharge + pisaiCharge + pouchCharge + actualCost) * quantity;
 	
-				console.log(`Calculated cost for this sale item: ${saleItemCost}`);
+				// console.log(`Calculated cost for this sold item: ${saleItemCost}`);
 	
-				// Add the sale item cost to the product total cost
-				productTotalCost += saleItemCost;
+				// Add the sale item cost to the overall total
+				total += saleItemCost;
 			});
-	
-			console.log(`Total cost for product ${item.selectedProduct}: ${productTotalCost}`);
-	
-			// Add the total cost for this product to the overall total
-			total += productTotalCost;
 		});
 	
-		console.log(`Final total manufacturing cost: ${total}`);
+		// console.log(`Final total manufacturing cost: ${total}`);
 		return total; // Return the final total manufacturing cost
 	};
-	
-	
-	
-	
-	
-	
-	
 	
 
 	const calculateRemainingStock = () => {
 		return products.map(product => {
-			const totalSold = sales
-				.filter(sale => sale.product === product.selectedProduct)
-				.reduce((total, sale) => total + sale?.quantity, 0);
-
-			const remainingQuantity = product?.quantity;
-
+			// Calculate total quantity sold for each product by summing quantities in sales productList
+			const totalSold = sales.reduce((total, sale) => {
+				const productInSale = sale.productList.find(item => item.product === product.selectedProduct);
+				return total + (productInSale ? productInSale.quantity : 0);
+			}, 0);
+	
+			// Remaining quantity of product in stock
+			const remainingQuantity = product.quantity;
+	
 			return {
 				selectedProduct: product.selectedProduct,
 				remainingQuantity
 			};
 		});
 	};
-
+	
 	const calculateTotalIncome = () => {
 		const totalSales = calculateTotalSales();
 		const totalManufacturingCost = calculateTotalManufacturingCost();
-		// console.log(totalSales, totalManufacturingCost)
+	
 		if (totalSales === 0) {
 			return 'No Sell';
 		}
 		return totalSales - totalManufacturingCost;
 	};
-
+	
 	const calculateProfitOrLoss = () => {
 		const totalIncome = calculateTotalIncome();
 		if (totalIncome === 'No Sell') {
@@ -170,6 +152,7 @@ const StockManagementDashboard = () => {
 			return totalIncome > 0 ? 'Profit' : 'Loss';
 		}
 	};
+	
 
 	if (loading) {
 		return <Loading />;
@@ -209,9 +192,7 @@ const StockManagementDashboard = () => {
 
 							}
 						</>
-
 					}
-
 				</div>
 
 				<div className="mt-10 pt-10 border-t border-gray-300">

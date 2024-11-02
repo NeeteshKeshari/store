@@ -8,7 +8,7 @@ import SalesList from "@/app/components/SalesList";
 
 export default function SalesPage() {
     const [product, setProduct] = useState("");
-    const [productList, setProductList] = useState([]);
+    const [productAPIData, setProductAPIData] = useState([]);
     const [quantity, setQuantity] = useState("");
     const [quantityTotal, setQuantityTotal] = useState("");
     const [productId, setProductId] = useState("");
@@ -144,35 +144,35 @@ export default function SalesPage() {
         }
     };
 
-    const [producList, setProducList] = useState([{ product: '', productId: '', quantity: '', cost: '', totalQuantity: '' }]);
+    const [productList, setProductList] = useState([{ product: '', productId: '', quantity: '', cost: '', totalQuantity: '' }]);
 
     // Function to handle product selection and auto-fill total quantity and cost
     const handleProductChange = (index, selectedProductName) => {
-        const selectedProduct = productList.find(product => product.selectedProduct === selectedProductName);
-        const updatedProductList = [...producList];
-        updatedProductList[index].product = selectedProductName;
-        updatedProductList[index].totalQuantity = selectedProduct.quantity;
-        updatedProductList[index].cost = selectedProduct.sellingCost;
-        updatedProductList[index].productId = selectedProduct._id;
-        setProducList(updatedProductList);
+        const selectedProduct = productAPIData.find(product => product.selectedProduct === selectedProductName);
+        const updatedProductAPIData = [...productList];
+        updatedProductAPIData[index].product = selectedProductName;
+        updatedProductAPIData[index].totalQuantity = selectedProduct.quantity;
+        updatedProductAPIData[index].cost = selectedProduct.sellingCost;
+        updatedProductAPIData[index].productId = selectedProduct._id;
+        setProductList(updatedProductAPIData);
     };
 
     // Function to handle quantity change for a specific product
     const handleQuantityChange = (index, quantity) => {
-        const updatedProductList = [...producList];
-        updatedProductList[index].quantity = quantity;
-        setProducList(updatedProductList);
+        const updatedProductAPIData = [...productList];
+        updatedProductAPIData[index].quantity = quantity;
+        setProductList(updatedProductAPIData);
     };
 
-    // Function to add a new product entry to producList
+    // Function to add a new product entry to productList
     const addProduct = () => {
-        setProducList([...producList, { product: '', quantity: '', productId: '', cost: '', totalQuantity: '' }]);
+        setProductList([...productList, { product: '', quantity: '', productId: '', cost: '', totalQuantity: '' }]);
     };
 
-    // Function to remove a specific product entry from producList
+    // Function to remove a specific product entry from productList
     const removeProduct = (index) => {
-        const updatedProductList = producList.filter((_, i) => i !== index);
-        setProducList(updatedProductList);
+        const updatedProductAPIData = productList.filter((_, i) => i !== index);
+        setProductList(updatedProductAPIData);
     };
 
     const [totalAmount, setTotalAmount] = useState(0);
@@ -181,7 +181,7 @@ export default function SalesPage() {
     const handleCalculateTotal = () => {
         setError("");
         // Calculate the total amount for all products
-        const calculatedTotalAmount = producList.reduce((sum, item) => {
+        const calculatedTotalAmount = productList.reduce((sum, item) => {
             return sum + (item.quantity * item.cost);
         }, 0);
 
@@ -204,9 +204,9 @@ export default function SalesPage() {
     
         // Prepare the payload based on the requirements
         const payload = {
-            producList: producList.map(item => ({
+            productList: productList.map(item => ({
                 product: item.product,
-                productId: item.productId,
+                _id: item._id,
                 quantity: item.quantity,
                 cost: item.cost,
             })),
@@ -216,34 +216,50 @@ export default function SalesPage() {
             amountPaid: amountPaid.map(payment => ({
                 amount: parseFloat(payment.amount),
                 date: new Date(payment.date).toISOString(),
-                _id: payment._id || undefined,
+                _id: payment._id || undefined, // Include _id for existing payments
             })),
             amountDue: totalAmount,
             totalDue: totalDue,
+            ...(editingSaleId ? { _id: editingSaleId } : {}),
         };
 
+        console.log(productList)
+    
         try {
-            const response = await fetch(`${apiUrl}/api/sales`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    "Authorization": `Bearer ${Cookies.get('authToken')}`
-                },
-                body: JSON.stringify(payload),
-            });
+            let response;
+            if (editingSaleId) {
+                response = await fetch(`${apiUrl}/api/sales/${editingSaleId}`, { // Use editingSaleId for the PUT request
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        "Authorization": `Bearer ${Cookies.get('authToken')}`
+                    },
+                    body: JSON.stringify(payload),
+                });
+            } else {
+                response = await fetch(`${apiUrl}/api/sales`, { // Use POST for new sale
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        "Authorization": `Bearer ${Cookies.get('authToken')}`
+                    },
+                    body: JSON.stringify(payload),
+                });
+            }
     
             if (response.ok) {
                 const data = await response.json();
                 alert('Sale submitted successfully!');
-                
+    
                 // Optional: Clear form state here if needed
-                setProducList([]); // Clear product list if appropriate
+                setProductList([]); // Clear product list if appropriate
                 setDate('');
                 setCustomerName('');
                 setCustomerAddress('');
                 setAmountPaid([{ amount: '', date: '' }]); // Reset to initial payment structure if desired
                 setTotalDue(0);
                 setAmountDue(0);
+                fetchSales();
             } else {
                 const errorData = await response.json();
                 console.error('Error:', errorData.message || errorData);
@@ -254,10 +270,17 @@ export default function SalesPage() {
             alert('An error occurred while submitting. Please try again later.');
         }
     };
+    
 
     const handleEdit = (sale) => {
-        // console.log(sale)
+        console.log(sale)
         setProduct(sale.product);
+        setProductList(sale.productList.map(product => ({
+            product: product.product,
+            quantity: product.quantity,
+            _id: product._id,
+            cost: product.cost,
+        })));
         setProductId(productId)
         setQuantity(sale.quantity);
         setCost(sale.cost);
@@ -275,6 +298,7 @@ export default function SalesPage() {
 
     const resetForm = () => {
         setProduct("Select Product");
+        setProductList([]); // Clear the product list
         setQuantity("");
         setProductId("");
         setQuantityTotal("");
@@ -291,22 +315,22 @@ export default function SalesPage() {
         setSuccess("");
     };
 
-    
 
-// const handleCalculateTotal = () => {
-//     setError("");
-//     if (!quantity || !cost || isNaN(quantity) || isNaN(cost) || quantity <= 0 || cost <= 0) {
-//         setError("Please enter valid Quantity and Cost.");
-//         return;
-//     }
 
-//     const total = parseFloat(quantity) * parseFloat(cost);
-//     const totalPaid = amountPaid.reduce((acc, payment) => acc + parseFloat(payment.amount || 0), 0);
-//     const due = total - totalPaid;
-//     setTotalDue(total.toFixed(2));
-//     setAmountDue(due.toFixed(2));
-//     setIsCalculated(true);
-// };
+    // const handleCalculateTotal = () => {
+    //     setError("");
+    //     if (!quantity || !cost || isNaN(quantity) || isNaN(cost) || quantity <= 0 || cost <= 0) {
+    //         setError("Please enter valid Quantity and Cost.");
+    //         return;
+    //     }
+
+    //     const total = parseFloat(quantity) * parseFloat(cost);
+    //     const totalPaid = amountPaid.reduce((acc, payment) => acc + parseFloat(payment.amount || 0), 0);
+    //     const due = total - totalPaid;
+    //     setTotalDue(total.toFixed(2));
+    //     setAmountDue(due.toFixed(2));
+    //     setIsCalculated(true);
+    // };
 
     useEffect(() => {
         async function fetchSales() {
@@ -316,14 +340,14 @@ export default function SalesPage() {
                         "Authorization": `Bearer ${Cookies.get('authToken')}`
                     }
                 });
-                setProductList(response.data);
+                setProductAPIData(response.data);
             } catch (error) {
                 console.error("Error fetching sales:", error);
             }
         }
         fetchSales();
     }, []);
-    
+
 
     return (
         <div className="min-h-screen py-10 flex flex-col items-center justify-center bg-gray-100">
@@ -340,10 +364,10 @@ export default function SalesPage() {
                     <div className='w-1/4'></div>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="mb-4">
-                        <label className="block text-sm font-medium">Select Customer</label>
+                    <div className="mb-4">
+                        <label className="block text-lg font-bold">{editingSaleId ? "Customer Details" : "Select Customer"}</label>
                         <select
-                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                            className={`${editingSaleId ? 'hidden' : 'mt-1 block w-full p-2 border border-gray-300 rounded-md'}`}
                             value={selectedCustomer}
                             onChange={handleCustomerChange}
                         >
@@ -358,40 +382,68 @@ export default function SalesPage() {
                     </div>
                     {newCustomer && (
                         <>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium">New Customer Name</label>
-                                <input
-                                    type="text"
-                                    value={customerName}
-                                    onChange={(e) => setCustomerName(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                                    placeholder="Enter customer name"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium">New Customer Address</label>
-                                <input
-                                    type="text"
-                                    value={customerAddress}
-                                    onChange={(e) => setCustomerAddress(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                                    placeholder="Enter customer address"
-                                    required
-                                />
-                            </div>
+                            {!editingSaleId &&
+                                <>
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium">New Customer Name</label>
+                                        <input
+                                            type="text"
+                                            value={customerName}
+                                            onChange={(e) => setCustomerName(e.target.value)}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                                            placeholder="Enter customer name"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium">New Customer Address</label>
+                                        <input
+                                            type="text"
+                                            value={customerAddress}
+                                            onChange={(e) => setCustomerAddress(e.target.value)}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                                            placeholder="Enter customer address"
+                                            required
+                                        />
+                                    </div>
+                                </>
+                            }
                         </>
                     )}
                     {!newCustomer && (
-                        <input
-                            type="text"
-                            placeholder="Customer Address"
-                            value={customerAddress}
-                            readOnly
-                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md bg-gray-100"
-                        />
+                        <>
+                            {!editingSaleId &&
+                                <input
+                                    type="text"
+                                    placeholder="Customer Address"
+                                    value={customerAddress}
+                                    readOnly
+                                    className="mt-1 block w-full p-2 border border-gray-300 rounded-md bg-gray-100"
+                                />
+                            }
+                        </>
                     )}
-                    {producList.map((productItem, index) => (
+                    {editingSaleId &&
+                        <div className="flex gap-y-3 flex-col">
+                            <input
+                                type="text"
+                                value={customerName}
+                                onChange={(e) => setCustomerName(e.target.value)}
+                                className="mt-1 block w-full p-2 border border-gray-300 rounded-md bg-gray-100"
+                                placeholder="Enter customer name"
+                                readOnly
+                            />
+                            <input
+                                type="text"
+                                value={customerAddress}
+                                onChange={(e) => setCustomerAddress(e.target.value)}
+                                className="mt-1 block w-full p-2 border border-gray-300 rounded-md bg-gray-100"
+                                placeholder="Enter customer address"
+                                readOnly
+                            />
+                        </div>
+                    }
+                    {productList.map((productItem, index) => (
                         <div key={index} className="space-y-4 border-b p-4 rounded-md mb-4 bg-gray-200 relative">
                             <h3 className="font-semibold text-lg">Product {index + 1}</h3>
 
@@ -405,7 +457,7 @@ export default function SalesPage() {
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                                     >
                                         <option value="">Select a product</option>
-                                        {productList.map((product) => (
+                                        {productAPIData.map((product) => (
                                             <option key={product._id} value={product.selectedProduct}>
                                                 {product.selectedProduct}
                                             </option>
@@ -421,7 +473,11 @@ export default function SalesPage() {
                                         value={productItem.quantity}
                                         onChange={(e) => handleQuantityChange(index, e.target.value)}
                                         placeholder="Enter quantity"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                                        className={editingSaleId
+                                            ? "mt-1 block w-full p-2 border border-gray-300 rounded-md bg-gray-100"
+                                            : "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                                        }
+                                        readOnly={!!editingSaleId}
                                     />
                                 </div>
                             </div>
@@ -482,7 +538,7 @@ export default function SalesPage() {
                         />
                     </div>
                     <div>
-                        <label className="block text-gray-700">Payments</label>
+                        <label className="block text-lg font-bold text-gray-700">Payments</label>
                         {amountPaid && amountPaid.map((payment, index) => {
                             // Check if the date is valid
                             const dateValue = payment.date ? new Date(payment.date) : null;
@@ -589,16 +645,18 @@ export default function SalesPage() {
 
             {/* Sales List */}
             <div className="w-full max-w-4xl mt-8">
+                {/* Sales Summary */}
                 <div className="bg-white p-4 rounded-lg shadow-md mb-6">
                     <h3 className="text-lg font-semibold text-gray-800">Sales Summary</h3>
                     <div className="flex flex-col sm:flex-row justify-between mt-4 text-xl">
-                        <p className="text-gray-600">Total: <span className="font-semibold">₹{totalOverallDueNew}</span></p>
+                        <p className="text-gray-600">Total: <span className="font-semibold">₹{totalDueNew}</span></p>
                         <p className="text-gray-600">Amount Paid: <span className="font-semibold">₹{totalPaidNew}</span></p>
-                        <p className="text-gray-600">Amount Due: <span className="font-semibold">₹{totalDueNew}</span></p>
+                        <p className="text-gray-600">Amount Due: <span className="font-semibold">₹{totalOverallDueNew}</span></p>
                     </div>
                 </div>
-                <h3 className="text-xl font-semibold px-4 md:px-0 text-gray-800 mb-4">Sales Records</h3>
 
+                {/* Customer Filter */}
+                <h3 className="text-xl font-semibold px-4 md:px-0 text-gray-800 mb-4">Sales Records</h3>
                 <div className="mb-4 mx-4 md:mx-0">
                     <label htmlFor="customerSelect" className="block font-bold text-sm text-gray-700">
                         Select Customer:
@@ -619,7 +677,12 @@ export default function SalesPage() {
                     </select>
                 </div>
 
-                <SalesList key={filteredSalesNew} filteredSalesNew={filteredSalesNew} handleEdit={handleEdit} fetchSales={fetchSales} />
+                <SalesList
+                    key={filteredSalesNew}
+                    filteredSalesNew={filteredSalesNew}
+                    handleEdit={handleEdit}
+                    fetchSales={fetchSales}
+                />
             </div>
         </div>
     );
